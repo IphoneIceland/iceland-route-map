@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>the group — Stop-by-Stop Route Map ()</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root{--bg:#0e1114;--panel:#161b21;--panel2:#1d242c;--line:#2b333d;--ink:#e8edf2;--mute:#93a1b0;--accent:#5ec8f2}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+  #wrap{display:flex;height:100%;overflow:hidden}
+  #side{width:430px;min-width:430px;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column}
+  #head{padding:16px 20px 13px;border-bottom:1px solid var(--line)}
+  #head h1{margin:0;font-size:16px;line-height:1.3}
+  #head p{margin:6px 0 0;font-size:11.5px;color:var(--mute);line-height:1.5}
+  #ctl{padding:10px 20px;border-bottom:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap}
+  button{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:6px 11px;font-size:12px;cursor:pointer;font-family:inherit}
+  button:hover{border-color:var(--accent);color:var(--accent)}
+  #days{overflow-y:auto;flex:1;padding:10px 12px 40px}
+  .day{border:1px solid var(--line);border-radius:10px;margin-bottom:10px;background:var(--panel2);overflow:hidden}
+  .dayhead{display:flex;align-items:center;gap:10px;padding:11px 13px;cursor:pointer;user-select:none}
+  .dot{width:11px;height:11px;border-radius:50%;flex:none}
+  .dayhead .t{font-size:13px;font-weight:600;flex:1;line-height:1.35}
+  .day.shown{border-color:#5ec8f2}
+  .dayhead .m{font-size:11px;color:var(--mute);white-space:nowrap;text-align:right}
+  .body{display:none;padding:2px 13px 13px}
+  .day.open .body{display:block}
+  .stop{display:flex;gap:9px;padding:7px 0;border-top:1px solid #262e37}
+  .num{flex:none;width:21px;height:21px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#0e1114}
+  .num.ferry{background:#fff;color:#0e1114;border-radius:4px}
+  .num.unplot{background:transparent;border:1.5px dashed #93a1b0;color:#93a1b0}
+  .sc{flex:1;min-width:0}
+  .sn{font-size:12.5px;font-weight:600;line-height:1.35}
+  .sd{font-size:11.5px;color:var(--mute);line-height:1.5;margin-top:1px}
+  .tw{flex:none;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px;padding-top:2px}
+  .tm.proj{color:#9fe0ff}
+  .tmb{font:400 10px/1.3 -apple-system,sans-serif;color:#6f8090;white-space:nowrap}
+  .fin{color:#9fe0ff;font-weight:600}
+  button.on{border-color:#5ec8f2;color:#5ec8f2}
+  .tm{flex:none;font:600 11.5px/1.4 -apple-system,sans-serif;color:#cfe6f4;font-variant-numeric:tabular-nums;white-space:nowrap;padding-top:2px}
+  .tm.none{color:#4d5a66;font-weight:400}
+  .provrow{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap}
+  .prov{font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:1px solid;border-radius:4px;padding:2px 5px;white-space:nowrap}
+  #legend{padding:9px 20px;border-bottom:1px solid var(--line);font-size:10.5px;color:var(--mute);line-height:1.7}
+  #legend b{font-weight:700}
+  .gm{display:inline-block;margin-top:0;font-size:10.5px;color:#5ec8f2;text-decoration:none;border-bottom:1px solid rgba(94,200,242,.35)}
+  .gm:hover{color:#9fe0ff}
+  .legln{font-size:10.5px;color:#6f8090;margin-top:3px;font-variant-numeric:tabular-nums}
+  .late{margin-top:4px;font-size:10.5px;color:#ffb3b3;background:#3a1a1a;border:1px solid #6b2b2b;border-radius:5px;padding:4px 6px;line-height:1.45}
+  .badlate{color:#ff9c9c;font-weight:600}
+  .flag{margin-top:10px;padding:9px 10px;border-radius:7px;background:#33240f;border:1px solid #6b4a17;color:#f4d79a;font-size:11.5px;line-height:1.5}
+  .note{margin-top:9px;padding:9px 10px;border-radius:7px;background:#0f2530;border:1px solid #1d4b5e;color:#b7e2f2;font-size:11.5px;line-height:1.5}
+  #map{flex:1;position:relative}
+  #zhint{position:absolute;z-index:500;bottom:14px;left:14px;background:rgba(22,27,33,.92);border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:11px;color:var(--mute)}
+  #foot{padding:11px 20px;border-top:1px solid var(--line);font-size:10.5px;color:var(--mute);line-height:1.6}
+  #foot a{color:var(--accent)}
+  .mpill{height:22px;padding:0 8px;border-radius:11px;border:2px solid #0e1114;display:flex;align-items:center;justify-content:center;font:700 11px/1 -apple-system,sans-serif;color:#0e1114;white-space:nowrap;box-shadow:0 0 0 1.5px rgba(255,255,255,.5)}
+  .mnum{border-radius:50%;white-space:nowrap;border:2px solid #0e1114;display:flex;align-items:center;justify-content:center;font:700 11px/1 -apple-system,sans-serif;color:#0e1114;box-shadow:0 0 0 1.5px rgba(255,255,255,.5)}
+  @media (max-width:860px){#wrap{flex-direction:column}#side{width:100%;min-width:0;height:55%;border-right:none;border-bottom:1px solid var(--line)}#map{height:45%}}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="side">
+    <div id="head">
+      <h1>Iceland — 7-Day South &amp; West Route</h1>
+      <p>6–13 Aug 2026</p>
+    </div>
+    <div id="ctl">
+      <button id="all">Show all days</button>
+      <button id="none">Hide all</button>
+      <button id="fit">Fit Iceland</button>
+      <button id="mode">Clock: booked times</button>
+    </div>
+    <div id="days"></div>
+    <div id="foot">Drive times: OSRM estimates, not coach times. Basemap © OpenStreetMap / CARTO.
+    </div>
+  </div>
+  <div id="map"><div id="zhint">Zoom in further to show place names</div></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="routes-data.js"></script>
+<script>
+const D = window.__ROUTES__;
+
+// ---- Days. Each stop: [pointKey|null, description, kind]  kind: ""|"ferry"|"unplotted"
+const PROV = {"UMI": "rj", "KAPLA": "rj", "NAES": "rj", "JOKULS": "rj", "NESJA": "rj", "STOP6": "rj", "THJOD": "gm", "ELEPHANT": "gm", "KEF": "osm", "ALMAR": "osm", "HVOLS": "osm", "SKOGA": "osm", "SELJA": "osm", "VIK": "osm", "REYNIS": "osm", "LANDEY": "osm", "HEIMAPORT": "osm", "HERJDAL": "osm", "STORHOFDI": "osm", "ELDFELL": "osm", "ELDHEIMAR": "osm", "KLAUSTUR": "osm", "FREYSNES": "osm", "FROST": "osm", "HJOKULS": "osm", "FJADRAR": "osm", "HGEYSIR": "osm", "STROKKUR": "osm", "GEYSIR": "osm", "BSI": "osm", "THING": "osm", "KERID": "osm", "FRID": "osm", "GULL": "osm", "ULFLJOT": "osm", "SELTUN": "osm", "PAPAS": "osm", "GRIND": "osm", "SKY": "osm", "DIAMOND": "bad", "GRODUR": "bad", "FAGRA": "bad"};
+const PROVLBL = {"rj": ["field pin", "#7ee081", "Your own dropped Google Maps pin."], "gm": ["Google Maps", "#5ec8f2", "Named Google Maps place, coordinates read from the place URL."], "osm": ["OpenStreetMap", "#93a1b0", "Named OpenStreetMap feature."], "bad": ["NOT VERIFIED", "#f26e6e", "No confirmed coordinate — do not rely on this pin."]};
+const DWELL = {"d1": {1: 45, 2: 25, 3: 15, 4: 35, 5: 30, 6: 60, 7: 30, 8: 0}, "d2": {1: 0, 2: 30, 3: 40, 4: 10, 5: 30, 6: 20, 7: 20, 8: 30, 9: 30, 10: 40, 11: 60, 12: 60, 13: 30, 14: 40, 15: 10, 16: 0}, "d3": {1: 0, 2: 20, 3: 15, 4: 60, 5: 30, 6: 75, 7: 0}, "d4": {1: 0, 2: 60, 3: 25, 4: 60, 5: 0, 6: 40, 7: 0}, "d5": {1: 0, 2: 0, 3: 45, 4: 30, 5: 90, 6: 45, 7: 45, 8: 0}, "d6": {1: 0, 2: 0, 3: 20, 4: 25, 5: 0}, "d7": {1: 0, 2: 25, 3: 120, 4: 60, 5: 45, 6: 120, 7: 0}};
+const CROSSING_NOTE = "assumed 35 min crossing + 20 min vehicle loading";
+const SCHED = {"d1": {1: "06:25", 8: "~16:00"}, "d2": {1: "08:50", 2: "09:30", 3: "10:00", 4: "10:40", 12: "15:00", 13: "17:30", 14: "18:00", 15: "18:40"}, "d3": {1: "09:00", 4: "12:30", 6: "15:10"}, "d4": {1: "09:00", 5: "~16:00"}, "d5": {1: "08:45", 2: "10:30", 3: "11:15", 4: "12:30", 5: "13:30", 6: "15:30", 7: "16:30"}, "d6": {1: "07:15", 2: "09:00"}, "d7": {1: "09:30", 2: "10:15", 3: "11:00", 4: "13:15", 5: "14:15", 6: "16:30", 7: "18:30"}};
+const SCHED_END = {"d2": {3: "10:40", 14: "18:40"}, "d5": {3: "12:00", 4: "13:00", 5: "15:00", 6: "16:15"}, "d7": {2: "10:40", 3: "13:00", 4: "14:15", 5: "15:00"}};
+const DAYS = [
+{
+ id:"d1", color:"#5ec8f2", date:"Thu 6 Aug", title:"Arrival + South Shore → Umi Hotel",
+ roads:["d1"],
+ stops:[
+  ["KEF","Group picked up from Keflavík Airport. Inbound flight lands 06:25.",""],
+  ["ALMAR","Rest stop in Hveragerði at Almar Bakari.",""],
+  ["HVOLS","Rest stop in Hvolsvöllur (if needed).",""],
+  ["SKOGA","Skógafoss.",""],
+  ["SELJA","Seljalandsfoss.",""],
+  ["VIK","Break for lunch in Vík.",""],
+  ["REYNIS","Reynisfjara black sand beach.",""],
+  ["UMI","Arrive Umi Hotel around 16:00, overnight. Driver and guide same hotel. Pin corrected to your Google Maps location, 63.51859, -19.64097 — my earlier road-derived pin was 1.4 km out, so every Umi leg has been recalculated.",""]],
+ flags:["The email order sends you past Seljalandsfoss to Skógafoss, then back west to Seljalandsfoss, then east again. Plotted exactly as written: 341 km / 5h19. Doing Seljalandsfoss (4) before Skógafoss (5) is 287 km / 4h32 — saves 54 km and ~47 min. Worth one email to the operator."],
+ notes:["Umi Hotel pin is now yours (63.51859, -19.64097). Reynisfjara → hotel is 42.2 km / ~39 min back westwards."]
+},
+{
+ id:"d2", color:"#7ee081", date:"Fri 7 Aug", title:"Westman Islands (Vestmannaeyjar)",
+ roads:["d2_a","d2_b","d2_c"], ferry:true,
+ stops:[
+  ["UMI","Departure from Umi Hotel at 08:50.",""],
+  ["LANDEY","Drive to Landeyjahöfn. 36.4 km / ~34 min from the corrected hotel pin. Check-in closes 09:30 — 30 min before the 10:00 sailing per the ticket. Earliest arrival 09:24, so only 6 minutes of margin.",""],
+  [null,"FERRY — Landeyjahöfn 10:00 → Heimaey 10:40. TICKETED: Ticketed crossing, vehicle included, so the coach is on board.","ferry","Ferry — Landeyjahöfn → Heimaey"],
+  ["HEIMAPORT","Arrive Heimaey 10:40. Herjólfur berth at Básaskersbryggja.",""],
+  ["HERJDAL","Herjólfsdalur — the settlement valley and the reconstructed Herjólfur farm (OSM: Herjólfstown). 1.9 km / ~4 min from the berth.",""],
+  ["THJOD","Þjóðhátíð Amphitheatre — the natural bowl the festival is staged in, 200 m from the farm. Coordinate from Google Maps; not in OpenStreetMap.",""],
+  ["KAPLA","Kaplagjóta — a long cleft running east, south of Dalfjall and parallel with Herjólfsdalur (Heimaslóð). Position is a field-verified pin, 63.43989, -20.30516. Sits 285 m from Elephant Rock and 466 m from the farm. Nearest road point is 379 m away, so it is a walk. Horses were thrown in to cull them: the 1528 Vilborgarstaðaþing capped Heimaey at 16 horses, and surplus or worn-out animals went over the edge. Above it on Dalfjall\u2019s south-east face are the grassy ledges Tíkartær, said to be haunted by a boy sent unwillingly to the puffin cliffs who fell to his death.",""],
+  ["ELEPHANT","Halldórsskora (Elephant Rock). Coordinate from Google Maps. NOT drive-up — nearest road point is the Herjólfsdalur road head, 641 m away straight-line, and that line crosses the Dalfjall/Blátindur ridge. Shown as a dashed spur. Often viewed from a boat instead; confirm the approach with the operator.",""],
+  ["STORHOFDI","Puffins at Stórhöfði cape.",""],
+  ["ELDFELL","Mt. Eldfell. Road reaches 357 m from the OSM summit point — the rest is on foot up the scoria.",""],
+  ["NAES","Lunch — næs, Strandvegur 79. Field pin. The itinerary email only said \u201cbreak for lunch in Vestmannaeyjabær\u201d with no venue, so this is yours, not the operator\u2019s. 3.3 km / ~6 min down from Eldfell, then 1.6 km / ~3 min on to Eldheimar.",""],
+  ["ELDHEIMAR","Eldheimar museum — booked 15:00.",""],
+  ["HEIMAPORT","Back at the berth. Ticket is the 18:00, so check-in closes 17:30.",""],
+  [null,"FERRY — 18:00 → Landeyjahöfn 18:40. TICKETED: Ticketed crossing, vehicle included. The itinerary email said 17:00; the ticket says 18:00. Ticket wins.","ferry","Ferry — Heimaey → Landeyjahöfn"],
+  ["LANDEY","Arrive Landeyjahöfn 18:40.",""],
+  ["UMI","Arrive Umi Hotel about 19:20 — roughly 50 min later than the ~18:30 in the email, because the ticket is the 18:00 sailing. Driver and guide same hotel.",""]],
+ flags:["The itinerary email says a 17:00 return. The issued ticket is the 18:00. Plan on 18:00 — harbour by 17:30, Umi ~19:20, roughly 50 min later than the email's ~18:30. Worth telling the hotel.","Outbound check-in closes 09:30 for the 10:00. With the corrected hotel pin, leaving at 08:50 gets you there 09:24 — 6 minutes of margin with the group and a 14 m coach to load. Leave at 08:30.","Þorlákshöfn diversion. Herjólfur\'s FAQ covers what happens if it cannot sail to Landeyjahöfn. Nothing on the 7 Aug booking indicates one, but know the fallback."],
+  notes:["Island driving with all stops in: 23.1 km / ~37 min total.","Ferry legs are drawn as white dashed straight lines — that is a sea crossing, not a road.","Times and crossing duration verified against the Herjólfur booking site for 7 Aug 2026 (40 min crossing, check-in 30 min before, boarding closes 5 min before).","Still outstanding: a pin for Diamond Beach and for the Greenhouse Hotel food hall in Hveragerði — the source for both resolved to the Jökulsárlón boat operator instead. Fagradalsfjall trailhead still unresolved.","Kaplagjóta is in neither OpenStreetMap nor Google Maps. It is now a field-verified pin. My earlier photogrammetric trace was 277 m off, so the ±50 m confidence I quoted was overstated.","Naming: there is no Herjólfsstaðir on Heimaey — that name belongs to a farm in Álftaver on the mainland (63.5250, -18.4223) and another in Skagafjörður. On the island it is Herjólfsdalur, with the reconstructed farm mapped as Herjólfstown / Herjólfsbær. Pin is the farm itself at 63.44209, -20.29716."]
+},
+{
+ id:"d3", color:"#f2a65e", date:"Sat 8 Aug", title:"Umi → Fjallsárlón / Jökulsárlón → Hotel Jökulsárlón",
+ roads:["d3"],
+ stops:[
+  ["UMI","Departure from Umi Hotel at 09:00.",""],
+  ["KLAUSTUR","Optional WC break — Kirkjubæjarklaustur (operator, 5 Aug: talk to the driver).",""],
+  ["FREYSNES","Alternative WC break — Freysnes (operator, 5 Aug).",""],
+  ["FROST","Lunch 12:30 at Fjallsárlón Frost restaurant.",""],
+  ["DIAMOND","Diamond Beach.",""],
+  ["JOKULS","Amphibian boat on Jökulsárlón — 15:10 and 15:20, booked. Field pin: the Glacier Lagoon Boat Tours & Cafe operator base, 64.04855, -16.17927.",""],
+  ["HJOKULS","Arrive Hotel Jökulsárlón after the boat tour. Driver and guide same hotel.",""]],
+ flags:["the operator quotes Umi → Fjallsárlón as 2h50m. OSRM road time via one WC stop is 3h12 driving. From 09:00, with a real break, 12:30 lunch is tight and there is no room for the 'sightseeing on the way' the email mentions."],
+ notes:["Only one of stops 2 and 3 is realistic. Kirkjubæjarklaustur is 112 km / 1h35 from Umi; Freysnes is another 71 km / 1h beyond it.","Diamond Beach and the Jökulsárlón car park are 1 km apart either side of the bridge — cheap to do both."]
+},
+{
+ id:"d4", color:"#e07ec8", date:"Sun 9 Aug", title:"Hotel Jökulsárlón → Hveragerði → Hotel Geysir",
+ roads:["d4","d4_x"],
+ stops:[
+  ["HJOKULS","09:00 departure from Hotel Jökulsárlón.",""],
+  ["FJADRAR","Fjaðrárgljúfur gorge hike.",""],
+  ["VIK","Rest stop in Vík.",""],
+  ["GRODUR","Late lunch — Greenhouse Hotel food hall, Hveragerði.",""],
+  ["HGEYSIR","Arrive Hotel Geysir around 16:00, group overnight.",""],
+  ["STROKKUR","Guided walk to Strokkur geyser 'across the street' — 350 m from the hotel, so this checks out.",""],
+  ["BSI","Bus, driver and guide continue to Reykjavík for the night. 106 km / 1h43 empty.",""]],
+ flags:["This day does not work as timed. 422 km / 6h11 of driving between 09:00 and 16:00 leaves 49 minutes for a gorge hike, a rest stop and a sit-down lunch. Then the crew still has the 1h43 run to Reykjavík on top.","Vík → Hveragerði → Hotel Geysir means passing the Selfoss/Geysir turn, going 70 km further west to eat, then 70 km back east. field queried this on 5 Aug; the operator confirmed it is intentional."],
+ notes:["A food stop closer to the Geysir side would claw back well over an hour. That is the single highest-value change in the week."]
+},
+{
+ id:"d5", color:"#c8a2f2", date:"Mon 10 Aug", title:"Golden Circle from Hotel Geysir",
+ roads:["d5_x","d5","d5_y"],
+ stops:[
+  ["BSI","Bus drives empty from BSÍ at 08:45. 115 km / 1h43.",""],
+  ["HGEYSIR","Pick up from Hotel Geysir at 10:30.",""],
+  ["THING","Þingvellir National Park 11:15–12:00.",""],
+  ["KERID","Kerið crater 12:30–13:00.",""],
+  ["FRID","Friðheimar 13:30–15:00. Restaurant fully booked; driver and guide use the guide-room.",""],
+  ["GULL","Gullfoss 15:30–16:15.",""],
+  ["GEYSIR","Geysir 16:30.",""],
+  ["BSI","Bus drives back to Reykjavík for the night. 106 km / 1h42.",""]],
+ flags:["Two windows are shorter than the drive. Hotel Geysir → Þingvellir is 57 min against a 45 min slot (10:30 → 11:15). Þingvellir → Kerið is 38 min against a 30 min slot (12:00 → 12:30). You start behind and never recover.","Þingvellir → Kerið → Friðheimar → Gullfoss → Geysir doubles back on itself. Running it Kerið → Friðheimar → Gullfoss → Geysir → Þingvellir cuts dead mileage significantly."],
+ notes:["Total for the day including both empty positioning legs: 380 km / 6h01."]
+},
+{
+ id:"d6", color:"#f2e05e", date:"Tue 11 Aug", title:"Hotel Geysir → Reykjavík via Úlfljótsvatn & Nesjavellir",
+ roads:["d6_x","d6"],
+ stops:[
+  ["BSI","Bus departs empty from BSÍ at 07:15. 115 km / 1h43.",""],
+  ["HGEYSIR","Departure from Hotel Geysir at 09:00.",""],
+  ["ULFLJOT","Úlfljótsvatnskirkja church. 61 km / ~55 min.",""],
+  ["NESJA","Nesjavellir Viewing Point — field pin, 64.10653, -21.26942. 14.9 km / ~17 min from the church. This is on the through road, unlike the plant entrance I had before.",""],
+  ["STOP6","Drop at Bus Stop #6 – Safnahúsið, Ingólfsstræti 1. Field pin, 64.14741, -21.93293. Group staying at Centerhotel Þingholt, a 4 min walk.",""]],
+ flags:["Tight but no longer impossible. With your Nesjavellir Viewing Point pin the run is 115.8 km / 1h56 of driving, not the 2h28 I had off the plant entrance. From 09:00 that lands 10:56 empty-handed, leaving about 34 min to split between Úlfljótsvatnskirkja and the viewpoint before the 11:30 walking tour. Doable if both stops are short. Correction: I previously told you this day could not be done."],
+ notes:["Bus Stop #6 is at Ingólfsstræti 1 by Safnahúsið — about a 4 minute walk from Centerhotel Þingholt.","Later that day the group has whale watching with Special Tours. Guide not attending.","No 12 Aug programme was issued — the group's own day."]
+},
+{
+ id:"d7", color:"#f26e6e", date:"Thu 13 Aug", title:"Reykjanes — Seltún, Fagradalsfjall, Grindavík, Sky Lagoon",
+ roads:["d7","d7_b"],
+ stops:[
+  ["STOP6","Departure from Bus Stop 6 at 09:30.",""],
+  ["SELTUN","Seltún geothermal area 10:15–10:40. 35 km / ~40 min from Stop 6.",""],
+  ["FAGRA","Fagradalsfjall hike 11:00–13:00. Marker is the mountain itself — no trailhead or car park is named in the email, so the connector is dashed, not a road route.",""],
+  ["PAPAS","Lunch 13:15–14:15 at Papa's, Grindavík. Fish, fries and soda pre-booked by the operator.",""],
+  ["GRIND","Drive around Grindavík 14:15–15:00.",""],
+  ["SKY","Sky Lagoon — Sér admission booked 16:30.",""],
+  ["STOP6","18:30 departure to Bus Stop 6.",""]],
+ flags:["No Fagradalsfjall trailhead specified, and access has repeatedly changed with eruption activity and closures. Get the exact car park and current access status from the operator, and check it again on the morning.","Grindavík access is subject to civil-protection closures. Verify on the day before committing to the lunch and the town drive."],
+ notes:["Timings on this day are the only ones in the week that actually hold up: 09:30 → 10:15 for a 40 min drive, and 15:00 → 16:30 for a 50 min drive."]
+}
+];
+
+
+// ---------- schedule engine ----------
+const LEG = {};
+Object.values(D.routes).forEach(r => r.legs.forEach(l => { LEG[l.from+">"+l.to] = l; }));
+
+function toMin(t){ if(!t) return null; const m=/(\d{1,2}):(\d{2})/.exec(t); return m? (+m[1])*60 + (+m[2]) : null; }
+function gmap(la,lo){ return `https://www.google.com/maps/search/?api=1&query=${la.toFixed(6)},${lo.toFixed(6)}`; }
+function toHHMM(m){ m=Math.round(m); const h=Math.floor(m/60)%24; return String(h).padStart(2,"0")+":"+String(m%60).padStart(2,"0"); }
+
+// Two clocks:
+//   "booked"    = the times the operator stated, plus earliest-possible arrival from drive time only
+//   "realistic" = projected clock from the day's first booked time, adding drive AND time on the ground
+let MODE = "booked";
+
+function schedule(d){
+  const sch = SCHED[d.id]||{}, end = SCHED_END[d.id]||{}, dw = DWELL[d.id]||{};
+  const rows = d.stops.map((s,i)=>({ n:i+1, key:s[0], desc:s[1], kind:s[2],
+      stated:sch[i+1]||"", statedEnd:end[i+1]||"", label:s[3]||"", dwell: dw[i+1]==null?0:dw[i+1] }));
+
+  // drive minutes into each stop
+  let prevKey=null;
+  rows.forEach(r=>{
+    if(r.key && prevKey){ const l = LEG[prevKey+">"+r.key]; r.leg = l ? {km:l.km,min:l.min} : null; }
+    if(r.key) prevKey = r.key;
+  });
+
+  // ---- booked clock: earliest arrival from drive alone, chain broken by unknown gaps
+  let anchor=null, accum=0;
+  rows.forEach(r=>{
+    if(r.kind==="ferry" && !r.stated){ anchor=null; accum=0; r.unknownGap=true; }
+    if(r.leg) accum += r.leg.min;
+    const st = toMin(r.stated);
+    if(anchor!==null) r.earliest = anchor + accum;
+    if(st!==null){
+      if(r.earliest!=null && r.earliest > st+1) r.late = r.earliest - st;
+      anchor = toMin(r.statedEnd)!==null ? toMin(r.statedEnd) : st;
+      accum = 0;
+    } else if(toMin(r.statedEnd)!==null){ anchor = toMin(r.statedEnd); accum = 0; }
+  });
+
+  // ---- realistic clock: never breaks, uses assumed crossing + dwell everywhere
+  const first = rows.find(r=>toMin(r.stated)!==null);
+  if(first){
+    let t = toMin(first.stated);
+    let started = false;
+    rows.forEach(r=>{
+      if(r === first){ started = true; r.proj = t; }
+      else if(started){
+        if(r.kind==="ferry" && !r.stated) r.projNote = CROSSING_NOTE;
+        t += (r.leg ? r.leg.min : 0);
+        r.proj = t;
+        const st = toMin(r.stated);
+        if(st!==null && t < st){ r.wait = st - t; t = st; r.proj = st; }  // cannot enter a booking early
+        if(st!==null && t > st+1) r.slip = t - st;
+      }
+      if(started) t += r.dwell;
+      if(started && toMin(r.statedEnd)!==null && t < toMin(r.statedEnd)) t = toMin(r.statedEnd);
+    });
+  }
+  return rows;
+}
+
+const map = L.map("map").setView([64.1,-19.6],7);
+L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{maxZoom:19,
+  attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'}).addTo(map);
+
+const FERRY_OUT = [[D.points.LANDEY.lat,D.points.LANDEY.lon],[D.points.HEIMAPORT.lat,D.points.HEIMAPORT.lon]];
+const layers = {}, labels = {}, marks = {};
+
+function pillIcon(color, txt){
+  const w = 16 + txt.length*7.2;
+  return L.divIcon({className:"", iconSize:[w,22], iconAnchor:[w/2,11],
+    html:`<div class="mpill" style="background:${color}">${txt}</div>`});
+}
+function numIcon(color, txt, size){
+  const s = size||24;
+  return L.divIcon({className:"", iconSize:[s,s], iconAnchor:[s/2,s/2],
+    html:`<div class="mnum" style="width:${s}px;height:${s}px;background:${color}">${txt}</div>`});
+}
+
+DAYS.forEach(d=>{
+  const g = L.featureGroup(), lab = L.layerGroup();
+  d.roads.forEach(k=>L.polyline(D.routes[k].geometry,{color:d.color,weight:4,opacity:.85}).addTo(g));
+
+  if(d.ferry){
+    L.polyline(FERRY_OUT,{color:"#ffffff",weight:3,opacity:.95,dashArray:"8,9"}).addTo(g)
+      .bindPopup("<b>Ferry</b><br>Landeyjahöfn ⇄ Heimaey<br>Outbound sailing time not stated in the itinerary; return stated as 17:00.");
+  }
+  if(d.id==="d2" && D.spurs){
+    Object.values(D.spurs).forEach(sp=>{
+      L.polyline([sp.road, sp.point],{color:"#ffffff",weight:2,opacity:.75,dashArray:"3,6"}).addTo(g)
+        .bindPopup(`<b>On foot</b><br>~${sp.walk_m} m from the nearest road point`);
+    });
+  }
+  if(d.id==="d7"){
+    L.polyline([[D.points.SELTUN.lat,D.points.SELTUN.lon],[D.points.FAGRA.lat,D.points.FAGRA.lon],[D.points.PAPAS.lat,D.points.PAPAS.lon]],
+      {color:d.color,weight:3,opacity:.8,dashArray:"5,8"}).addTo(g);
+  }
+
+  // markers live in their own layer, rebuilt on zoom so overlapping stops collapse into one pin
+  d._mk = L.layerGroup();
+  d._plotted = d.stops.map((s,i)=>({n:i+1, key:s[0], desc:s[1]})).filter(o=>o.key);
+  d._refreshTimes = ()=>{
+    const sc = schedule(d);
+    d._plotted.forEach(o=>{
+      const r = sc[o.n-1];
+      o.time = MODE==="booked"
+        ? (r.stated ? r.stated + (r.statedEnd?"–"+r.statedEnd:"") : (r.earliest!=null?"≈ "+toHHMM(r.earliest):""))
+        : (r.proj!=null ? toHHMM(r.proj) + (r.stated?"  (booked "+r.stated+")":"") : "");
+      o.short = MODE==="booked" ? (r.stated||"") : (r.proj!=null?toHHMM(r.proj):"");
+    });
+  };
+
+  const seenLabel = new Set();
+  d._labelSpec = [];
+  d._plotted.forEach(o=>{
+    if(seenLabel.has(o.key)) return; seenLabel.add(o.key);
+    d._labelSpec.push(o);
+  });
+  d._buildLabels = ()=>{
+    lab.clearLayers();
+    d._labelSpec.forEach(o=>{
+      const p = D.points[o.key];
+      const t = o.short ? `<span style="color:${d.color}">${o.short}</span>  ` : "";
+      L.marker([p.lat,p.lon],{interactive:false,icon:L.divIcon({className:"",iconSize:[0,0],
+        html:`<div style="font:600 11px/1 -apple-system,sans-serif;color:#fff;text-shadow:0 0 4px #000,0 0 4px #000,0 0 3px #000;white-space:nowrap;transform:translate(16px,-4px)">${t}${p.name}</div>`})}).addTo(lab);
+    });
+  };
+
+  layers[d.id]=g; labels[d.id]=lab; marks[d.id]=d._mk;
+});
+
+const LABEL_ZOOM = 12;
+function syncLabels(){
+  DAYS.forEach(d=>{
+    const on = map.hasLayer(layers[d.id]) && map.getZoom() >= LABEL_ZOOM;
+    if(on && !map.hasLayer(labels[d.id])) labels[d.id].addTo(map);
+    if(!on && map.hasLayer(labels[d.id])) map.removeLayer(labels[d.id]);
+  });
+  document.getElementById("zhint").style.display = map.getZoom() >= LABEL_ZOOM ? "none" : "block";
+}
+map.on("zoomend", syncLabels);
+function frameSelection(){
+  const on = DAYS.filter(d=>map.hasLayer(layers[d.id])).map(d=>layers[d.id]);
+  if(!on.length){ map.setView([64.1,-19.6],7); return; }
+  map.fitBounds(L.featureGroup(on).getBounds().pad(.10));
+}
+function rebuildMarkers(){
+  DAYS.forEach(d=>{
+    if(d._refreshTimes) d._refreshTimes();
+    if(d._buildLabels) d._buildLabels();
+    if(!d._mk) return;
+    const on = map.hasLayer(layers[d.id]);
+    if(!on){ if(map.hasLayer(d._mk)) map.removeLayer(d._mk); d._mk.clearLayers(); return; }
+    if(!map.hasLayer(d._mk)) d._mk.addTo(map);
+    d._mk.clearLayers();
+    const placed = [];
+    d._plotted.forEach(o=>{
+      const p = D.points[o.key];
+      const pt = map.latLngToLayerPoint([p.lat,p.lon]);
+      const hit = placed.find(q => pt.distanceTo(q.pt) < 26);
+      if(hit){ hit.ns.push(o.n); hit.items.push(o); }
+      else { placed.push({pt:pt, ll:[p.lat,p.lon], ns:[o.n], items:[o]}); }
+    });
+    placed.forEach(gr=>{
+      const single = gr.ns.length === 1;
+      const sorted = gr.ns.slice().sort((a,b)=>a-b);
+      const contiguous = sorted.length === sorted[sorted.length-1] - sorted[0] + 1;
+      const txt = single ? String(sorted[0])
+                : (contiguous ? sorted[0]+"–"+sorted[sorted.length-1] : sorted.join(" · "));
+      const html = gr.items.map(o=>{
+        const pp = D.points[o.key];
+        const t = o.time ? `<div style="font-weight:700;color:#0b5f86">${o.time}</div>` : "";
+        const pv = PROVLBL[PROV[o.key]||"bad"];
+        return `${t}<b>Stop ${o.n} — ${pp.name}</b><br>${o.desc}`
+             + `<br><b style="color:#0b5f86">Source: ${pv[0]}</b>`
+             + `<br><span style="color:#8a97a5">${pp.lat.toFixed(5)}, ${pp.lon.toFixed(5)}</span>`
+             + `<br><a target="_blank" rel="noopener" href="${gmap(pp.lat,pp.lon)}">Open in Google Maps ↗</a>`;
+      }).join("<hr style='border:none;border-top:1px solid #ddd;margin:6px 0'>");
+      L.marker(gr.ll,{icon: single ? numIcon(d.color, txt) : pillIcon(d.color, txt), zIndexOffset: single?0:400}).addTo(d._mk)
+        .bindPopup(html + (single ? "" : "<br><span style=\'color:#8a97a5\'>Zoom in to separate these stops</span>"));
+    });
+  });
+}
+map.on("zoomend", rebuildMarkers);
+
+
+// ---- sidebar
+const list = document.getElementById("days");
+function renderSidebar(openIds){
+  list.innerHTML = "";
+  openIds = openIds || new Set();
+DAYS.forEach(d=>{
+  const km = d.roads.reduce((a,k)=>a+D.routes[k].distance_km,0);
+  const mn = d.roads.reduce((a,k)=>a+D.routes[k].duration_min,0);
+  const el = document.createElement("div"); el.className="day"; el.dataset.id = d.id;
+  const sched = schedule(d);
+  const rows = sched.map(r=>{
+    const cls = r.kind==="ferry" ? "num ferry" : (r.kind==="unplotted" ? "num unplot" : "num");
+    const bg  = r.kind==="" ? `background:${d.color}` : "";
+    const nm  = r.key ? D.points[r.key].name : (r.label || (r.kind==="ferry" ? "Ferry crossing" : "Stop"));
+
+    const booked = r.stated ? `${r.stated}${r.statedEnd?"–"+r.statedEnd:""}` : "";
+    let clock, sub = "";
+    if(MODE === "booked"){
+      clock = booked ? `<span class="tm">${booked}</span>` : `<span class="tm none">—</span>`;
+      if(r.unknownGap) sub = `<div class="legln" style="color:#f4d79a">crossing time unknown — clock estimates stop here</div>`;
+      else if(r.late)  sub = `<div class="late">${r.late} min late — earliest arrival ${toHHMM(r.earliest)} vs booked ${r.stated}</div>`;
+      else if(r.earliest!=null && !r.stated) sub = `<div class="legln">earliest here ≈ ${toHHMM(r.earliest)}</div>`;
+    } else {
+      clock = r.proj!=null
+        ? `<span class="tm proj">${toHHMM(r.proj)}</span>${booked?`<span class="tmb">booked ${booked}</span>`:""}`
+        : `<span class="tm none">—</span>`;
+      if(r.projNote) sub += `<div class="legln" style="color:#f4d79a">${r.projNote}</div>`;
+      if(r.dwell)    sub += `<div class="legln">${r.dwell} min on the ground</div>`;
+      if(r.wait)     sub += `<div class="legln" style="color:#9fdcae">${r.wait} min spare before the booking</div>`;
+      if(r.slip)     sub += `<div class="late">${r.slip} min past the booked ${r.stated}</div>`;
+    }
+
+    let badge = "";
+    if(r.key){
+      const t = PROV[r.key] || "bad", L = PROVLBL[t];
+      badge = `<span class="prov" style="color:${L[1]};border-color:${L[1]}44" title="${L[2]}">${L[0]}</span>`;
+    }
+    const gm = r.key ? `<a class="gm" target="_blank" rel="noopener" href="${gmap(D.points[r.key].lat, D.points[r.key].lon)}">Open in Google Maps ↗</a>` : "";
+    const leg = r.leg ? `<div class="legln">↓ ${r.leg.km} km · ${r.leg.min} min drive</div>` : "";
+    return `${leg}<div class="stop"><div class="${cls}" style="${bg}">${r.n}</div>
+      <div class="sc"><div class="sn">${nm}</div><div class="sd">${r.desc}</div>${sub}<div class="provrow">${badge}${gm}</div></div>
+      <div class="tw">${clock}</div></div>`;
+  }).join("");
+  const lateTotal = sched.filter(r => MODE==="booked" ? r.late : r.slip).length;
+  const endProj = sched.filter(r=>r.proj!=null).slice(-1)[0];
+  el.innerHTML = `
+   <div class="dayhead"><span class="dot" style="background:${d.color}"></span>
+     <span class="t">${d.date} — ${d.title}</span>
+     <span class="m">${d.stops.length} stops<br>${Math.round(km)} km · ${Math.floor(mn/60)}h${String(mn%60).padStart(2,"0")}${lateTotal?`<br><span class="badlate">${lateTotal} timing clash${lateTotal>1?"es":""}</span>`:""}${MODE==="realistic"&&endProj?`<br><span class="fin">ends ≈ ${toHHMM(endProj.proj)}</span>`:""}</span></div>
+   <div class="body">${rows}
+     ${(d.flags||[]).map(f=>`<div class="flag"><b>Check this:</b> ${f}</div>`).join("")}
+     ${(d.notes||[]).map(n=>`<div class="note">${n}</div>`).join("")}</div>`;
+  el.querySelector(".dayhead").onclick=()=>{
+    const open = el.classList.toggle("open");
+    el.classList.toggle('shown', open);
+    if(open){ layers[d.id].addTo(map); }
+    else { map.removeLayer(layers[d.id]); map.removeLayer(labels[d.id]); if(map.hasLayer(marks[d.id])) map.removeLayer(marks[d.id]); }
+    frameSelection(); syncLabels(); rebuildMarkers();
+  };
+  if(openIds.has(d.id)) el.classList.add("open");
+  list.appendChild(el);
+});
+}
+renderSidebar();
+
+document.getElementById("all").onclick=()=>{
+  DAYS.forEach(d=>layers[d.id].addTo(map));
+  document.querySelectorAll(".day").forEach(e=>{e.classList.add("open");e.classList.add("shown");});
+  frameSelection(); syncLabels(); rebuildMarkers();
+};
+document.getElementById("none").onclick=()=>{
+  DAYS.forEach(d=>{map.removeLayer(layers[d.id]);map.removeLayer(labels[d.id]);if(map.hasLayer(marks[d.id]))map.removeLayer(marks[d.id]);});
+  document.querySelectorAll(".day").forEach(e=>{e.classList.remove("open");e.classList.remove("shown");});
+  frameSelection(); syncLabels(); rebuildMarkers();
+};
+document.getElementById("fit").onclick=()=>map.setView([64.1,-19.6],7);
+
+document.getElementById("mode").onclick=()=>{
+  MODE = MODE==="booked" ? "realistic" : "booked";
+  document.getElementById("mode").textContent =
+    MODE==="booked" ? "Clock: booked times" : "Clock: realistic (with stop time)";
+  document.getElementById("mode").classList.toggle("on", MODE==="realistic");
+  const openIds = new Set([...document.querySelectorAll(".day.open")].map(e=>e.dataset.id));
+  renderSidebar(openIds);
+  rebuildMarkers();
+};
+
+(function initialView(){
+  map.setView([64.1,-19.6],7);
+  syncLabels(); rebuildMarkers();
+})();   // open the Westman Islands day first
+</script>
+</body>
+</html>
