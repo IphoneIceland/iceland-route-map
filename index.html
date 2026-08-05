@@ -88,10 +88,10 @@ const D = window.__ROUTES__;
 // ---- Days. Each stop: [pointKey|null, description, kind]  kind: ""|"ferry"|"unplotted"
 const PROV = {"UMI": "rj", "KAPLA": "rj", "NAES": "rj", "JOKULS": "rj", "NESJA": "rj", "STOP6": "rj", "THJOD": "gm", "ELEPHANT": "gm", "KEF": "osm", "ALMAR": "osm", "HVOLS": "osm", "SKOGA": "osm", "SELJA": "osm", "VIK": "osm", "REYNIS": "osm", "LANDEY": "osm", "HEIMAPORT": "osm", "HERJDAL": "osm", "STORHOFDI": "osm", "ELDFELL": "osm", "ELDHEIMAR": "osm", "KLAUSTUR": "osm", "FREYSNES": "osm", "FROST": "osm", "HJOKULS": "osm", "FJADRAR": "osm", "HGEYSIR": "osm", "STROKKUR": "osm", "GEYSIR": "osm", "BSI": "osm", "THING": "osm", "KERID": "osm", "FRID": "osm", "GULL": "osm", "ULFLJOT": "osm", "SELTUN": "osm", "PAPAS": "osm", "GRIND": "osm", "SKY": "osm", "DIAMOND": "bad", "GRODUR": "bad", "FAGRA": "bad"};
 const PROVLBL = {"rj": ["your pin", "#7ee081", "Your own dropped Google Maps pin."], "gm": ["Google Maps", "#5ec8f2", "Named Google Maps place, coordinates read from the place URL."], "osm": ["OpenStreetMap", "#93a1b0", "Named OpenStreetMap feature."], "bad": ["NOT VERIFIED", "#f26e6e", "No confirmed coordinate — do not rely on this pin."]};
-const DWELL = {"d1": {1: 50, 2: 25, 3: 0, 4: 35, 5: 35, 6: 50, 7: 40, 8: 0}, "d2": {1: 0, 2: 30, 3: 40, 4: 10, 5: 30, 6: 20, 7: 20, 8: 30, 9: 30, 10: 40, 11: 60, 12: 60, 13: 30, 14: 40, 15: 10, 16: 0}, "d3": {1: 0, 2: 30, 3: 15, 4: 60, 5: 55, 6: 75, 7: 0}, "d4": {1: 0, 2: 60, 3: 20, 4: 45, 5: 0, 6: 40, 7: 0}, "d5": {1: 0, 2: 0, 3: 45, 4: 30, 5: 90, 6: 45, 7: 45, 8: 0, 9: 0}, "d6": {1: 0, 2: 0, 3: 20, 4: 25, 5: 0}, "d7": {1: 0, 2: 25, 3: 120, 4: 60, 5: 45, 6: 120, 7: 0}};
+const DWELL = {"d1": {1: 50, 2: 25, 3: 0, 4: 35, 5: 35, 6: 50, 7: 40, 8: 0}, "d2": {1: 0, 2: 30, 3: 40, 4: 10, 5: 30, 6: 20, 7: 20, 8: 30, 9: 30, 10: 40, 11: 60, 12: 60, 13: 30, 14: 40, 15: 10, 16: 0}, "d3": {1: 0, 2: 30, 3: 15, 4: 60, 5: 55, 6: 75, 7: 0}, "d4": {1: 0, 2: 60, 3: 20, 4: 45, 5: 0, 6: 40}, "d5": {1: 0, 2: 45, 3: 30, 4: 90, 5: 45, 6: 45, 7: 0}, "d6": {1: 0, 2: 20, 3: 25, 4: 0}, "d7": {1: 0, 2: 25, 3: 120, 4: 60, 5: 45, 6: 120, 7: 0}};
 const CROSSING_NOTE = "assumed 35 min crossing + 20 min vehicle loading";
-const SCHED = {"d1": {1: "06:25"}, "d2": {1: "08:50", 2: "09:30", 3: "10:00", 4: "10:40", 12: "15:00", 13: "17:30", 14: "18:00", 15: "18:40"}, "d3": {1: "08:30", 4: "12:30", 6: "15:10"}, "d4": {1: "08:00", 5: "~16:00"}, "d5": {1: "08:45", 2: "10:30", 3: "11:15", 4: "12:30", 5: "13:30", 6: "15:30", 7: "16:30"}, "d6": {1: "07:15", 2: "09:00"}, "d7": {1: "09:30", 2: "10:15", 3: "11:00", 4: "13:15", 5: "14:15", 6: "16:30", 7: "18:30"}};
-const SCHED_END = {"d2": {3: "10:40", 14: "18:40"}, "d5": {3: "12:00", 4: "13:00", 5: "15:00", 6: "16:15"}, "d7": {2: "10:40", 3: "13:00", 4: "14:15", 5: "15:00"}};
+const SCHED = {"d1": {1: "06:25"}, "d2": {1: "08:50", 2: "09:30", 3: "10:00", 4: "10:40", 12: "15:00", 13: "17:30", 14: "18:00", 15: "18:40"}, "d3": {1: "08:30", 4: "12:30", 6: "15:10"}, "d4": {1: "08:00", 5: "~16:00"}, "d5": {1: "10:30", 2: "11:15", 3: "12:30", 4: "13:30", 5: "15:30", 6: "16:30"}, "d6": {1: "09:00"}, "d7": {1: "09:30", 2: "10:15", 3: "11:00", 4: "13:15", 5: "14:15", 6: "16:30", 7: "18:30"}};
+const SCHED_END = {"d2": {3: "10:40", 14: "18:40"}, "d5": {2: "12:00", 3: "13:00", 4: "15:00", 5: "16:15"}, "d7": {2: "10:40", 3: "13:00", 4: "14:15", 5: "15:00"}};
 const DAYS = [
 {
  id:"d1", color:"#5ec8f2", date:"Thu 6 Aug", title:"Arrival + South Shore → Umi Hotel (reordered)",
@@ -147,45 +147,41 @@ const DAYS = [
 },
 {
  id:"d4", color:"#e07ec8", date:"Sun 9 Aug", title:"Hotel Jökulsárlón → Hveragerði → Hotel Geysir",
- roads:["d4","d4_x"],
+ roads:["d4"],
  stops:[
   ["HJOKULS","Leave at 08:00, not the 09:00 in the email. As written this day is 422 km / 6h11 of driving in a 09:00\u201316:00 window. The hour is the only thing that makes it deliverable.",""],
   ["FJADRAR","Fjaðrárgljúfur gorge hike. 141 km / 2h02 from the hotel. 60 min.",""],
   ["VIK","Rest stop in Vík, 20 min.",""],
   ["GRODUR","Late lunch at Greenhouse Hotel Food Hall, Hveragerði — as booked. 45 min.",""],
   ["HGEYSIR","Arrive Hotel Geysir, group overnight.",""],
-  ["STROKKUR","Guided walk to Strokkur — 350 m from the hotel door, so the email\u2019s \u201cacross the street\u201d checks out.",""],
-  ["BSI","Bus, driver and guide continue to Reykjavík. 106 km / 1h43 empty.",""]],
+  ["STROKKUR","Guided walk to Strokkur — 350 m from the hotel door, so the email\u2019s \u201cacross the street\u201d checks out.",""]],
  flags:["NO REORDER POSSIBLE. Fjaðrárgljúfur, Vík and Hveragerði already run east to west in geographic order, so there is no dead mileage to cut by resequencing. The 128 km overshoot past the Geysir turnoff to Hveragerði and back is built into the stop list itself, and the operator confirmed it on 5 Aug: \u201ccorrect, you will go from Vík to hveragerði and then to Hotel Geysir.\u201d Measured cost of that overshoot: 37 minutes.","Even leaving at 08:00 this is the hardest day of the week \u2014 422 km / 6h11 with the group, then 106 km / 1h43 empty to Reykjavík. That is 7h54 of driving in one duty period. Check it against the driver\u2019s hours."],
  notes:["Projected from an 08:00 start: Fjaðrárgljúfur 10:02–11:02, Vík 12:03–12:23, Hveragerði 14:29–15:14, Hotel Geysir about 16:16, Strokkur on foot from the hotel.","From the 09:00 in the email you reach Hotel Geysir about 17:16, over an hour past the stated 4pm."]
 },
 {
  id:"d5", color:"#c8a2f2", date:"Mon 10 Aug", title:"Golden Circle loop from Hotel Geysir",
- roads:["d5_x","d5","d5_y"],
+ roads:["d5"],
  stops:[
-  ["BSI","Bus drives empty from BSÍ at 08:45.",""],
   ["HGEYSIR","Pick up from Hotel Geysir at 10:30.",""],
   ["THING","Þingvellir National Park, 11:15–12:00.",""],
   ["KERID","Kerið crater, 12:30–13:00.",""],
   ["FRID","Friðheimar, 13:30–15:00. Restaurant fully booked; driver and guide use the guide-room.",""],
   ["GULL","Gullfoss, 15:30–16:15.",""],
   ["GEYSIR","Geysir, 16:30.",""],
-  ["HGEYSIR","Drop back at Hotel Geysir — 500 m from Geysir. Group overnight here, then departs 09:00 on the 11th.",""],
-  ["BSI","Bus, driver and guide return to Reykjavík for the night.",""]],
- flags:["ORDER CONFIRMED AS THE EMAIL HAS IT. Tested all 120 possible sequences with the loop pinned to start and finish at Hotel Geysir: Þingvellir, Kerið, Friðheimar, Gullfoss, Geysir is rank 1 of 120 at 155.4 km / 2h30. Nothing beats it. There is no wasted driving to cut here.","Running it in reverse looks shorter only if you ignore the drop-off. The group sleeps at Hotel Geysir and departs from there at 09:00 on the 11th, so the loop has to come back — and once it does, the reverse saves nothing.","The two empty positioning legs are the real cost of this day: 115 km out from BSÍ before pickup and 106 km back after drop-off. That is unavoidable with the bus based in Reykjavík and the group based at Geysir."],
+  ["HGEYSIR","Drop back at Hotel Geysir — 500 m from Geysir. Group overnight here, then departs 09:00 on the 11th.",""]],
+ flags:["ORDER CONFIRMED AS THE EMAIL HAS IT. Tested all 120 possible sequences with the loop pinned to start and finish at Hotel Geysir: Þingvellir, Kerið, Friðheimar, Gullfoss, Geysir is rank 1 of 120 at 155.4 km / 2h30. Nothing beats it. There is no wasted driving to cut here.","Running it in reverse looks shorter only if you ignore the drop-off. The group sleeps at Hotel Geysir and departs from there at 09:00 on the 11th, so the loop has to come back — and once it does, the reverse saves nothing.","Not shown: the bus runs 115 km empty from Reykjavík before the 10:30 pickup and 106 km back after drop-off. That is 221 km of positioning on top of the 160 km loop, and it is unavoidable with the bus based in Reykjavík and the group at Geysir."],
   notes:["Tight spot: Hotel Geysir → Þingvellir is 57 min against the 45 min the email allows (10:30 to 11:15), and Þingvellir → Kerið is 38 min against a 30 min gap. You start about 12 min behind and stay there. Friðheimar at 13:30 is the booking that matters and it holds."]
 },
 {
  id:"d6", color:"#f2e05e", date:"Tue 11 Aug", title:"Hotel Geysir → Reykjavík via Úlfljótsvatn & Nesjavellir",
- roads:["d6_x","d6"],
+ roads:["d6"],
  stops:[
-  ["BSI","Bus departs empty from BSÍ at 07:15. 115 km / 1h43.",""],
   ["HGEYSIR","Departure from Hotel Geysir at 09:00.",""],
   ["ULFLJOT","Úlfljótsvatnskirkja church. 61 km / ~55 min.",""],
   ["NESJA","Nesjavellir Viewing Point — your pin, 64.10653, -21.26942. 14.9 km / ~17 min from the church. This is on the through road, unlike the plant entrance I had before.",""],
   ["STOP6","Drop at Bus Stop #6 – Safnahúsið, Ingólfsstræti 1. Your pin, 64.14741, -21.93293. Group staying at Centerhotel Þingholt, a 4 min walk.",""]],
  flags:["Tight but no longer impossible. With your Nesjavellir Viewing Point pin the run is 115.8 km / 1h56 of driving, not the 2h28 I had off the plant entrance. From 09:00 that lands 10:56 empty-handed, leaving about 34 min to split between Úlfljótsvatnskirkja and the viewpoint before the 11:30 walking tour. Doable if both stops are short. Correction: I previously told you this day could not be done."],
- notes:["Bus Stop #6 is at Ingólfsstræti 1 by Safnahúsið — about a 4 minute walk from Centerhotel Þingholt.","Later that day the group has whale watching with Special Tours. Guide not attending.","No 12 Aug programme was issued — the group's own day."]
+ notes:["Not shown: the bus departs Reykjavík empty at 07:15 to reach Hotel Geysir for the 09:00 start, 115 km / 1h43.","Bus Stop #6 is at Ingólfsstræti 1 by Safnahúsið — about a 4 minute walk from Centerhotel Þingholt.","Later that day the group has whale watching with Special Tours. Guide not attending.","No 12 Aug programme was issued — the group's own day."]
 },
 {
  id:"d7", color:"#f26e6e", date:"Thu 13 Aug", title:"Reykjanes — Seltún, Fagradalsfjall, Grindavík, Sky Lagoon",
@@ -193,7 +189,7 @@ const DAYS = [
  stops:[
   ["STOP6","Departure from Bus Stop 6 at 09:30.",""],
   ["SELTUN","Seltún geothermal area 10:15–10:40. 35 km / ~40 min from Stop 6.",""],
-  ["FAGRA","Fagradalsfjall hike 11:00–13:00. Marker is the mountain itself — no trailhead or car park is named in the email, so the connector is dashed, not a road route.",""],
+  ["FAGRA","Fagradalsfjall hike 11:00–13:00. Marker is the mountain itself. No trailhead or car park is named in the email, so this stop is deliberately left unconnected to the drawn route — drawing a line to it would imply a road access we have not confirmed.",""],
   ["PAPAS","Lunch 13:15–14:15 at Papa's, Grindavík. Fish, fries and soda pre-booked by the operator.",""],
   ["GRIND","Drive around Grindavík 14:15–15:00.",""],
   ["SKY","Sky Lagoon — Sér admission booked 16:30.",""],
@@ -296,10 +292,6 @@ DAYS.forEach(d=>{
       L.polyline([sp.road, sp.point],{color:"#ffffff",weight:2,opacity:.75,dashArray:"3,6"}).addTo(g)
         .bindPopup(`<b>On foot</b><br>~${sp.walk_m} m from the nearest road point`);
     });
-  }
-  if(d.id==="d7"){
-    L.polyline([[D.points.SELTUN.lat,D.points.SELTUN.lon],[D.points.FAGRA.lat,D.points.FAGRA.lon],[D.points.PAPAS.lat,D.points.PAPAS.lon]],
-      {color:d.color,weight:3,opacity:.8,dashArray:"5,8"}).addTo(g);
   }
 
   // markers live in their own layer, rebuilt on zoom so overlapping stops collapse into one pin
