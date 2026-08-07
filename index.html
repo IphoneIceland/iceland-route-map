@@ -27,6 +27,10 @@
   .body{display:none;padding:2px 13px 13px}
   .day.open .body{display:block}
   .stop{display:flex;gap:9px;padding:7px 0;border-top:1px solid #262e37}
+  .stop[data-key]{cursor:pointer;border-radius:6px;margin:0 -6px;padding-left:6px;padding-right:6px;transition:background .12s}
+  .stop[data-key]:hover{background:#232c35}
+  .stop[data-key]:hover .sn{color:var(--accent)}
+  .stop[data-key]:active{background:#2a343f}
   .num{flex:none;width:21px;height:21px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#0e1114}
   .num.ferry{background:#fff;color:#0e1114;border-radius:4px}
   .num.unplot{background:transparent;border:1.5px dashed #93a1b0;color:#93a1b0}
@@ -86,34 +90,34 @@
 const D = window.__ROUTES__;
 
 // ---- Days. Each stop: [pointKey|null, description, kind]  kind: ""|"ferry"|"unplotted"
-const PROV = {"UMI": "rj", "KAPLA": "rj", "NAES": "rj", "JOKULS": "rj", "NESJA": "rj", "STOP6": "rj", "THJOD": "gm", "ELEPHANT": "gm", "KEF": "osm", "ALMAR": "osm", "HVOLS": "osm", "SKOGA": "osm", "SELJA": "osm", "VIK": "osm", "REYNIS": "osm", "LANDEY": "osm", "HEIMAPORT": "osm", "HERJDAL": "osm", "STORHOFDI": "osm", "ELDFELL": "osm", "ELDHEIMAR": "osm", "KLAUSTUR": "osm", "FREYSNES": "osm", "FROST": "osm", "HJOKULS": "osm", "FJADRAR": "osm", "HGEYSIR": "osm", "STROKKUR": "osm", "GEYSIR": "osm", "BSI": "osm", "THING": "osm", "KERID": "osm", "FRID": "osm", "GULL": "osm", "ULFLJOT": "osm", "SELTUN": "osm", "PAPAS": "osm", "GRIND": "osm", "SKY": "osm", "DIAMOND": "bad", "GRODUR": "bad", "FAGRA": "bad"};
+const PROV = {"UMI": "rj", "KAPLA": "rj", "NAES": "rj", "JOKULS": "rj", "NESJA": "rj", "STOP6": "rj", "THJOD": "gm", "ELEPHANT": "gm", "KEF": "osm", "ALMAR": "osm", "HVOLS": "osm", "SKOGA": "osm", "SELJA": "osm", "VIK": "osm", "REYNIS": "osm", "LANDEY": "osm", "HEIMAPORT": "osm", "HERJDAL": "osm", "STORHOFDI": "osm", "ELDFELL": "osm", "ELDHEIMAR": "osm", "KLAUSTUR": "osm", "FREYSNES": "osm", "FROST": "osm", "HJOKULS": "osm", "FJADRAR": "osm", "HGEYSIR": "osm", "STROKKUR": "osm", "GEYSIR": "osm", "BSI": "osm", "THING": "osm", "KERID": "osm", "FRID": "osm", "GULL": "osm", "ULFLJOT": "osm", "SELTUN": "osm", "PAPAS": "osm", "GRIND": "osm", "SKY": "osm", "GRODUR": "gm", "FAGRA": "gm", "DIAMOND": "bad"};
 const PROVLBL = {"rj": ["your pin", "#7ee081", "Your own dropped Google Maps pin."], "gm": ["Google Maps", "#5ec8f2", "Named Google Maps place, coordinates read from the place URL."], "osm": ["OpenStreetMap", "#93a1b0", "Named OpenStreetMap feature."], "bad": ["NOT VERIFIED", "#f26e6e", "No confirmed coordinate — do not rely on this pin."]};
-const DWELL = {"d1": {1: 50, 2: 25, 3: 0, 4: 35, 5: 35, 6: 50, 7: 40, 8: 0}, "d2": {1: 0, 2: 30, 3: 40, 4: 10, 5: 30, 6: 20, 7: 20, 8: 30, 9: 30, 10: 40, 11: 60, 12: 60, 13: 30, 14: 40, 15: 10, 16: 0}, "d3": {1: 0, 2: 30, 3: 15, 4: 60, 5: 55, 6: 75, 7: 0}, "d4": {1: 0, 2: 60, 3: 20, 4: 45, 5: 0, 6: 40}, "d5": {1: 0, 2: 45, 3: 30, 4: 90, 5: 45, 6: 45, 7: 0}, "d6": {1: 0, 2: 20, 3: 25, 4: 0}, "d7": {1: 0, 2: 25, 3: 120, 4: 60, 5: 45, 6: 120, 7: 0}};
+const DWELL = {"d1": {1: 75, 2: 25, 3: 0, 4: 35, 5: 35, 6: 50, 7: 40, 8: 0}, "d2": {1: 0, 2: 30, 3: 40, 4: 10, 5: 30, 6: 15, 7: 20, 8: 20, 9: 25, 10: 40, 11: 45, 12: 60, 13: 30, 14: 40, 15: 10, 16: 0}, "d3": {1: 0, 2: 30, 3: 5, 4: 60, 5: 55, 6: 75, 7: 0}, "d4": {1: 0, 2: 45, 3: 10, 4: 40, 5: 0, 6: 40}, "d5": {1: 0, 2: 35, 3: 30, 4: 90, 5: 45, 6: 45, 7: 0}, "d6": {1: 0, 2: 20, 3: 25, 4: 0}, "d7": {1: 0, 2: 25, 3: 120, 4: 50, 5: 45, 6: 105, 7: 0}};
 const CROSSING_NOTE = "assumed 35 min crossing + 20 min vehicle loading";
-const SCHED = {"d1": {1: "06:25"}, "d2": {1: "08:50", 2: "09:30", 3: "10:00", 4: "10:40", 12: "15:00", 13: "17:30", 14: "18:00", 15: "18:40"}, "d3": {1: "08:30", 4: "12:30", 6: "15:10"}, "d4": {1: "08:00", 5: "~16:00"}, "d5": {1: "10:30", 2: "11:15", 3: "12:30", 4: "13:30", 5: "15:30", 6: "16:30"}, "d6": {1: "09:00"}, "d7": {1: "09:30", 2: "10:15", 3: "11:00", 4: "13:15", 5: "14:15", 6: "16:30", 7: "18:30"}};
-const SCHED_END = {"d2": {3: "10:40", 14: "18:40"}, "d5": {2: "12:00", 3: "13:00", 4: "15:00", 5: "16:15"}, "d7": {2: "10:40", 3: "13:00", 4: "14:15", 5: "15:00"}};
+const SCHED = {"d1": {1: "06:25"}, "d2": {1: "08:50", 2: "09:30", 3: "10:00", 4: "10:40", 12: "15:00", 13: "17:30", 14: "18:00", 15: "18:40"}, "d3": {1: "08:30", 4: "12:30", 6: "15:10"}, "d4": {1: "08:00", 5: "~16:00"}, "d5": {1: "10:15", 2: "11:15", 3: "12:30", 4: "13:30", 5: "15:30", 6: "16:30"}, "d6": {1: "09:00"}, "d7": {1: "09:30", 2: "10:15", 3: "11:00", 4: "13:15", 5: "14:15", 6: "16:30", 7: "18:30"}};
+const SCHED_END = {"d2": {3: "10:40", 14: "18:40"}, "d5": {2: "11:50", 3: "13:00", 4: "15:00", 5: "16:15"}, "d7": {2: "10:40", 3: "13:00", 4: "14:10", 5: "15:00"}};
 const DAYS = [
 {
  id:"d1", color:"#5ec8f2", date:"Thu 6 Aug", title:"Arrival + South Shore → Umi Hotel (reordered)",
  roads:["d1"],
  stops:[
-  ["KEF","Inbound flight lands 06:25. 50 min for immigration, bags and loading the group — roll at 07:15.",""],
+  ["KEF","Inbound flight lands 06:25. 75 min minimum for immigration, bags and loading the group — roll at 07:40. Deliberately generous: a full widebody through passport control plus 32 pax of hold luggage onto a 14 m coach is not a 50 min job, and every minute lost here is lost from the first stop.",""],
   ["ALMAR","Rest stop at Almar Bakari, Sunnumörk 2. Open 07:00–18:00 daily, so no opening risk. 25 min.",""],
   ["HVOLS","Hvolsvöllur — held as a drive-through, 0 min. It sits 58 min after the bakery, so a second rest stop that soon is one too many for a group off a redeye. If you do stop, it comes out of the day\u2019s buffer.",""],
   ["SELJA","Seljalandsfoss. 35 min — enough to walk behind the falls and back.",""],
   ["REYNIS","Reynisfjara. Taken before Vík since the Route 215 turnoff comes first driving east. 35 min. Sneaker waves — brief them before they leave the coach.",""],
   ["VIK","Lunch in Vík. 50 min.",""],
   ["SKOGA","Skógafoss. Taken on the run in, 9.4 km short of the hotel instead of a 42 km backtrack. 40 min — base of the falls, not the 527 steps.",""],
-  ["UMI","Projected arrival 14:54, against the \u201caround 4pm\u201d in the email. Overnight; driver and guide same hotel.",""]],
- flags:["REORDERED from the itinerary email. As the operator listed it — Skógafoss, Seljalandsfoss, Vík, Reynisfjara — the day runs 342 km / 5h22. This order is 288 km / 4h35: 54 km and 47 minutes saved. Two changes: Reynisfjara before Vík, because its Route 215 turnoff comes first driving east; and Skógafoss last, because the hotel sits between Seljalandsfoss and Skógafoss, turning a 42 km backtrack into a 9.4 km stop on the run in. Needs the operator to sign off."],
- notes:["Umi Hotel pin is field-verified (63.51859, -19.64097), which is what makes the reorder work — it sits between Seljalandsfoss and Skógafoss.","Tightened: 235 min on the ground against 275 min driving, so the hotel comes up at 14:55 rather than 16:00. That is an hour in hand on a day the group has come off an overnight from Washington. Allocation: 50 airport, 25 bakery, 35 Seljalandsfoss, 35 Reynisfjara, 50 lunch, 40 Skógafoss, Hvolsvöllur zero.","Almar Bakari opening hours verified at almarbakari.is: 07:00–18:00 daily, Sunnumörk 2, Hveragerði."]
+  ["UMI","Projected arrival 15:40, against the \u201caround 4pm\u201d in the email. Overnight; driver and guide same hotel.",""]],
+ flags:["REORDERED from the itinerary email — guide's call, running as shown. As the operator listed it — Skógafoss, Seljalandsfoss, Vík, Reynisfjara — the day runs 342 km / 5h22. This order is 288 km / 4h35: 54 km and 47 minutes saved. Two changes: Seljalandsfoss first and Reynisfjara before Vík, because the Route 215 turnoff comes first driving east; and Skógafoss last, because the hotel sits between Seljalandsfoss and Skógafoss, turning a 42 km backtrack into a 9.4 km stop on the run in. Not routed past the operator — if they query it on the day, the saving above is the answer."],
+ notes:["Umi Hotel pin is field-verified (63.51859, -19.64097), which is what makes the reorder work — it sits between Seljalandsfoss and Skógafoss.","260 min on the ground against 274 min driving, so the hotel comes up at 15:40 rather than 16:00 — still 20 min inside the email's “around 4pm” on a day the group has come off an overnight from Washington. Allocation: 75 airport, 25 bakery, 35 Seljalandsfoss, 35 Reynisfjara, 50 lunch, 40 Skógafoss, Hvolsvöllur zero.","Almar Bakari opening hours verified at almarbakari.is: 07:00–18:00 daily, Sunnumörk 2, Hveragerði."]
 },
 {
  id:"d2", color:"#7ee081", date:"Fri 7 Aug", title:"Westman Islands (Vestmannaeyjar)",
  roads:["d2_a","d2_b","d2_c"], ferry:true,
  stops:[
   ["UMI","Departure from Umi Hotel at 08:50.",""],
-  ["LANDEY","Drive to Landeyjahöfn. 36.4 km / ~34 min from the corrected hotel pin. Check-in closes 09:30 — 30 min before the 10:00 sailing per the ticket. Earliest arrival 09:24, so only 6 minutes of margin.",""],
+  ["LANDEY","Drive to Landeyjahöfn. 36.4 km / ~34 min from the corrected hotel pin. Check-in closes 09:30 — 30 min before the 10:00 sailing per the ticket. Earliest arrival 09:25, so only 5 minutes of margin.",""],
   [null,"FERRY — Landeyjahöfn 10:00 → Heimaey 10:40. TICKETED: Herjólfur ferry booking, Ferð 1, paid. the group = the group, plus one coach, so the coach is on board.","ferry","Ferry — Landeyjahöfn → Heimaey"],
   ["HEIMAPORT","Arrive Heimaey 10:40. Herjólfur berth at Básaskersbryggja.",""],
   ["HERJDAL","Herjólfsdalur — the settlement valley and the reconstructed Herjólfur farm (OSM: Herjólfstown). 1.9 km / ~4 min from the berth.",""],
@@ -127,8 +131,8 @@ const DAYS = [
   ["HEIMAPORT","Back at the berth. Ticket is the 18:00, so check-in closes 17:30.",""],
   [null,"FERRY — 18:00 → Landeyjahöfn 18:40. TICKETED: ferry booking, Ferð 2, paid. Same the group + a 14 m coach. The itinerary email said 17:00; the ticket says 18:00. Ticket wins.","ferry","Ferry — Heimaey → Landeyjahöfn"],
   ["LANDEY","Arrive Landeyjahöfn 18:40.",""],
-  ["UMI","Arrive Umi Hotel about 19:20 — roughly 50 min later than the ~18:30 in the email, because the ticket is the 18:00 sailing. Driver and guide same hotel.",""]],
- flags:["The itinerary email says a 17:00 return. The paid ticket (Herjólfur ferry booking, sent by the operator 5 Aug) is the 18:00. Plan on 18:00 — harbour by 17:30, Umi ~19:20, roughly 50 min later than the email's ~18:30. Worth telling the hotel.","Outbound check-in closes 09:30 for the 10:00. With the corrected hotel pin, leaving at 08:50 gets you there 09:24 — 6 minutes of margin with the group and a 14 m coach to load. Leave at 08:30.","Þorlákshöfn diversion. Herjólfur\'s FAQ covers what happens if it cannot sail to Landeyjahöfn. Nothing on the 7 Aug booking indicates one, but know the fallback."],
+  ["UMI","Arrive Umi Hotel about 19:25 — roughly 55 min later than the ~18:30 in the email, because the ticket is the 18:00 sailing. Driver and guide same hotel.",""]],
+ flags:["The itinerary email says a 17:00 return. The paid ticket (Herjólfur ferry booking, sent by the operator 5 Aug) is the 18:00. Plan on 18:00 — harbour by 17:30, Umi ~19:25, roughly 55 min later than the email's ~18:30. Worth telling the hotel.","Outbound check-in closes 09:30 for the 10:00. With the corrected hotel pin, leaving at 08:50 gets you there 09:25 — 5 minutes of margin with the group and a 14 m coach to load. Leave at 08:30.","Þorlákshöfn diversion. Herjólfur\'s FAQ covers what happens if it cannot sail to Landeyjahöfn. Nothing on the 7 Aug booking indicates one, but know the fallback."],
   notes:["Island driving with all stops in: 23.1 km / ~37 min total.","Ferry legs are drawn as white dashed straight lines — that is a sea crossing, not a road.","Times and crossing duration verified against the Herjólfur booking site for 7 Aug 2026 (40 min crossing, check-in 30 min before, boarding closes 5 min before).","Still outstanding: a pin for Diamond Beach and for the Greenhouse Hotel food hall in Hveragerði — the link you sent for both resolved to the Jökulsárlón boat operator instead. Fagradalsfjall trailhead still open.","Kaplagjóta is in neither OpenStreetMap nor Google Maps. It is now your dropped pin. My earlier photogrammetric trace was 277 m off, so the ±50 m confidence I quoted was overstated.","Naming: there is no Herjólfsstaðir on Heimaey — that name belongs to a farm in Álftaver on the mainland (63.5250, -18.4223) and another in Skagafjörður. On the island it is Herjólfsdalur, with the reconstructed farm mapped as Herjólfstown / Herjólfsbær. Pin is the farm itself at 63.44209, -20.29716."]
 },
 {
@@ -138,12 +142,12 @@ const DAYS = [
   ["UMI","Leave at 08:30, not the 09:00 in the email. Umi to Frost direct is 225 km / 3h12 — from 09:00 with a 20 min WC stop you are 3 minutes late for the 12:30 lunch. 08:30 buys you 27 minutes.",""],
   ["KLAUSTUR","WC and coffee, 30 min. 113 km / 1h38 from the hotel, so this is the natural first break.",""],
   ["FREYSNES","Leg-stretch, 15 min. Costs nothing in driving: Klaustur → Freysnes → Frost is 95 min, identical to Klaustur → Frost direct, because Freysnes is on the road.",""],
-  ["FROST","Lunch 12:30–13:30 at Fjallsárlón Frost. Projected arrival 12:28.",""],
+  ["FROST","Lunch 12:30–13:30 at Fjallsárlón Frost. Projected arrival 12:40 — 10 min into the booking. Ring ahead or trim Freysnes to 5 min.",""],
   ["DIAMOND","Diamond Beach, 55 min. Given a generous allocation deliberately — it soaks up what would otherwise be a dead wait at the lagoon before the boat.",""],
   ["JOKULS","Amphibian boat — 15:10 (25 pax) and 15:20 (7 pax), a booking. Arrive 14:39, so 31 min in hand to get two departures checked in. 75 min allowed for check-in and the tour.",""],
   ["HJOKULS","Arrive Hotel Jökulsárlón after the boat tour. Driver and guide same hotel.",""]],
  flags:["the operator quotes Umi → Fjallsárlón as 2h50m. It is 3h12 by road — she is 22 minutes optimistic, and that is before anyone gets off the coach. This is why the departure has to move to 08:30.","The email says \u201csightseeing on the way\u201d. There is no room for it before lunch. Klaustur and Freysnes are functional stops only. Skaftafell sits right at Freysnes but needs 90 min plus, which does not fit ahead of a 12:30 booking — it would have to displace the lunch."],
-  notes:["Both stops now fit: 08:30 away, 30 min at Klaustur, 15 min at Freysnes, Frost at 12:28. The afternoon is comfortable — 55 min at Diamond Beach, at the boat by 14:39 for a 15:10 departure, hotel about 16:37.","Diamond Beach and the Jökulsárlón car park are 1 km apart either side of the bridge — cheap to do both."]
+  notes:["Both stops now fit: 08:30 away, 30 min at Klaustur, 15 min at Freysnes, Frost at 12:40. The afternoon is comfortable — 55 min at Diamond Beach, at the boat by 15:10 with 15 min spare before the departure, hotel about 16:40.","Diamond Beach and the Jökulsárlón car park are 1 km apart either side of the bridge — cheap to do both."]
 },
 {
  id:"d4", color:"#e07ec8", date:"Sun 9 Aug", title:"Hotel Jökulsárlón → Hveragerði → Hotel Geysir",
@@ -152,11 +156,11 @@ const DAYS = [
   ["HJOKULS","Leave at 08:00, not the 09:00 in the email. As written this day is 422 km / 6h11 of driving in a 09:00\u201316:00 window. The hour is the only thing that makes it deliverable.",""],
   ["FJADRAR","Fjaðrárgljúfur gorge hike. 141 km / 2h02 from the hotel. 60 min.",""],
   ["VIK","Rest stop in Vík, 20 min.",""],
-  ["GRODUR","Late lunch at Greenhouse Hotel Food Hall, Hveragerði — as booked. 45 min.",""],
+  ["GRODUR","Late lunch at Greenhouse Hotel Food Hall, Hveragerði — as booked. 40 min. Pin now confirmed from your Google Maps link: The Greenhouse Hotel, 63.99648, -21.19064.",""],
   ["HGEYSIR","Arrive Hotel Geysir, group overnight.",""],
   ["STROKKUR","Guided walk to Strokkur — 350 m from the hotel door, so the email\u2019s \u201cacross the street\u201d checks out.",""]],
  flags:["NO REORDER POSSIBLE. Fjaðrárgljúfur, Vík and Hveragerði already run east to west in geographic order, so there is no dead mileage to cut by resequencing. The 128 km overshoot past the Geysir turnoff to Hveragerði and back is built into the stop list itself, and the operator confirmed it on 5 Aug: \u201ccorrect, you will go from Vík to hveragerði and then to Hotel Geysir.\u201d Measured cost of that overshoot: 37 minutes.","Even leaving at 08:00 this is the hardest day of the week \u2014 422 km / 6h11 with the group, then 106 km / 1h43 empty to Reykjavík. That is 7h54 of driving in one duty period. Check it against the driver\u2019s hours."],
- notes:["Projected from an 08:00 start: Fjaðrárgljúfur 10:02–11:02, Vík 12:03–12:23, Hveragerði 14:29–15:14, Hotel Geysir about 16:16, Strokkur on foot from the hotel.","From the 09:00 in the email you reach Hotel Geysir about 17:16, over an hour past the stated 4pm."]
+ notes:["Projected from an 08:00 start: Fjaðrárgljúfur 10:05–11:05, Vík 12:10–12:30, Hveragerði 14:40–15:25, Hotel Geysir about 16:30, Strokkur on foot from the hotel.","From the 09:00 in the email you reach Hotel Geysir about 17:16, over an hour past the stated 4pm."]
 },
 {
  id:"d5", color:"#c8a2f2", date:"Mon 10 Aug", title:"Golden Circle loop from Hotel Geysir",
@@ -170,7 +174,7 @@ const DAYS = [
   ["GEYSIR","Geysir, 16:30.",""],
   ["HGEYSIR","Drop back at Hotel Geysir — 500 m from Geysir. Group overnight here, then departs 09:00 on the 11th.",""]],
  flags:["ORDER CONFIRMED AS THE EMAIL HAS IT. Tested all 120 possible sequences with the loop pinned to start and finish at Hotel Geysir: Þingvellir, Kerið, Friðheimar, Gullfoss, Geysir is rank 1 of 120 at 155.4 km / 2h30. Nothing beats it. There is no wasted driving to cut here.","Running it in reverse looks shorter only if you ignore the drop-off. The group sleeps at Hotel Geysir and departs from there at 09:00 on the 11th, so the loop has to come back — and once it does, the reverse saves nothing.","Not shown: the bus runs 115 km empty from Reykjavík before the 10:30 pickup and 106 km back after drop-off. That is 221 km of positioning on top of the 160 km loop, and it is unavoidable with the bus based in Reykjavík and the group at Geysir."],
-  notes:["Tight spot: Hotel Geysir → Þingvellir is 57 min against the 45 min the email allows (10:30 to 11:15), and Þingvellir → Kerið is 38 min against a 30 min gap. You start about 12 min behind and stay there. Friðheimar at 13:30 is the booking that matters and it holds."]
+  notes:["Tight spot: Hotel Geysir → Þingvellir is 57 min against the 45 min the email allows (10:30 to 11:15), and Þingvellir → Kerið is 38 min against a 30 min gap. You start 15 min behind at Þingvellir and it compounds to 25 by Kerið, where it stays all afternoon. Friðheimar is the booking that matters and it does NOT hold: projected 13:55 against a booked 13:30, at a restaurant that is fully booked. Ring them, or cut 25 min out of Þingvellir and Kerið."]
 },
 {
  id:"d6", color:"#f2e05e", date:"Tue 11 Aug", title:"Hotel Geysir → Reykjavík via Úlfljótsvatn & Nesjavellir",
@@ -180,7 +184,7 @@ const DAYS = [
   ["ULFLJOT","Úlfljótsvatnskirkja church. 61 km / ~55 min.",""],
   ["NESJA","Nesjavellir Viewing Point — your pin, 64.10653, -21.26942. 14.9 km / ~17 min from the church. This is on the through road, unlike the plant entrance I had before.",""],
   ["STOP6","Drop at Bus Stop #6 – Safnahúsið, Ingólfsstræti 1. Your pin, 64.14741, -21.93293. Group staying at Centerhotel Þingholt, a 4 min walk.",""]],
- flags:["Tight but no longer impossible. With your Nesjavellir Viewing Point pin the run is 115.8 km / 1h56 of driving, not the 2h28 I had off the plant entrance. From 09:00 that lands 10:56 empty-handed, leaving about 34 min to split between Úlfljótsvatnskirkja and the viewpoint before the 11:30 walking tour. Doable if both stops are short. Correction: I previously told you this day could not be done."],
+ flags:["Tight but no longer impossible. With your Nesjavellir Viewing Point pin the run is 115.8 km / 1h56 of driving, not the 2h28 I had off the plant entrance. From 09:00 that lands 11:00 empty-handed, leaving 30 min to split between Úlfljótsvatnskirkja and the viewpoint before the 11:30 walking tour. The 20 + 25 min currently allocated does not fit — it puts you at Stop 6 at 11:45, 15 min late. Cut both to 15 min. Correction: I previously told you this day could not be done."],
  notes:["Not shown: the bus departs Reykjavík empty at 07:15 to reach Hotel Geysir for the 09:00 start, 115 km / 1h43.","Bus Stop #6 is at Ingólfsstræti 1 by Safnahúsið — about a 4 minute walk from Centerhotel Þingholt.","Later that day the group has whale watching with Special Tours. Guide not attending.","No 12 Aug programme was issued — the group's own day."]
 },
 {
@@ -189,7 +193,7 @@ const DAYS = [
  stops:[
   ["STOP6","Departure from Bus Stop 6 at 09:30.",""],
   ["SELTUN","Seltún geothermal area 10:15–10:40. 35 km / ~40 min from Stop 6.",""],
-  ["FAGRA","Fagradalsfjall hike 11:00–13:00. Marker is the mountain itself. No trailhead or car park is named in the email, so this stop is deliberately left unconnected to the drawn route — drawing a line to it would imply a road access we have not confirmed.",""],
+  ["FAGRA","Fagradalsfjall hike 11:00–13:00. Pin moved to the Suðurstrandarvegur road head, 63.86634, -22.31656, from your Google Maps link. CAVEAT: that link resolves to the business listing Fagradalsfjall Volcano Tours, which sits at the road head — it is not the car park feature itself. The two official car parks are P1 Geldingadalir and P2 Stóri-Leirdalur, 1000 ISK at parka.is. Still drawn unconnected to the route: no routed leg has been generated to this point. Confirm the exact car park and access with the operator on the morning.",""],
   ["PAPAS","Lunch 13:15–14:15 at Papa's, Grindavík. Fish, fries and soda pre-booked by the operator.",""],
   ["GRIND","Drive around Grindavík 14:15–15:00.",""],
   ["SKY","Sky Lagoon — Sér admission booked 16:30.",""],
@@ -205,6 +209,10 @@ const LEG = {};
 Object.values(D.routes).forEach(r => r.legs.forEach(l => { LEG[l.from+">"+l.to] = l; }));
 
 function toMin(t){ if(!t) return null; const m=/(\d{1,2}):(\d{2})/.exec(t); return m? (+m[1])*60 + (+m[2]) : null; }
+// Every computed arrival rounds UP to the next 5 minutes. Two reasons: nobody runs a coach
+// off a 14:27, and the rounding IS the traffic allowance — it buys 1–4 min a leg, always
+// in the safe direction. Booked times are never rounded; those are somebody else's clock.
+function ceil5(m){ return Math.ceil(m/5)*5; }
 function gmap(la,lo){ return `https://www.google.com/maps/search/?api=1&query=${la.toFixed(6)},${lo.toFixed(6)}`; }
 function toHHMM(m){ m=Math.round(m); const h=Math.floor(m/60)%24; return String(h).padStart(2,"0")+":"+String(m%60).padStart(2,"0"); }
 
@@ -231,7 +239,7 @@ function schedule(d){
     if(r.kind==="ferry" && !r.stated){ anchor=null; accum=0; r.unknownGap=true; }
     if(r.leg) accum += r.leg.min;
     const st = toMin(r.stated);
-    if(anchor!==null) r.earliest = anchor + accum;
+    if(anchor!==null) r.earliest = ceil5(anchor + accum);
     if(st!==null){
       if(r.earliest!=null && r.earliest > st+1) r.late = r.earliest - st;
       anchor = toMin(r.statedEnd)!==null ? toMin(r.statedEnd) : st;
@@ -248,11 +256,17 @@ function schedule(d){
       if(r === first){ started = true; r.proj = t; }
       else if(started){
         if(r.kind==="ferry" && !r.stated) r.projNote = CROSSING_NOTE;
-        t += (r.leg ? r.leg.min : 0);
+        t = ceil5(t + (r.leg ? r.leg.min : 0));
         r.proj = t;
+        // A booked time is NON-NEGOTIABLE. The clock does not drift past it and it does not
+        // "run 25 minutes behind" all afternoon. It snaps to the booking, and the shortfall is
+        // reported as time you have to claw back BEFORE you get here.
         const st = toMin(r.stated);
-        if(st!==null && t < st){ r.wait = st - t; t = st; r.proj = st; }  // cannot enter a booking early
-        if(st!==null && t > st+1) r.slip = t - st;
+        if(st!==null){
+          if(t < st) r.wait = st - t;
+          else if(t > st) r.squeeze = t - st;
+          t = st; r.proj = st;
+        }
       }
       if(started) t += r.dwell;
       if(started && toMin(r.statedEnd)!==null && t < toMin(r.statedEnd)) t = toMin(r.statedEnd);
@@ -262,8 +276,20 @@ function schedule(d){
 }
 
 const map = L.map("map").setView([64.1,-19.6],7);
-L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{maxZoom:19,
-  attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'}).addTo(map);
+
+const SAT = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+  {maxZoom:19, attribution:'Imagery &copy; Esri, Maxar, Earthstar Geographics'});
+const TERRAIN = L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+  {maxZoom:17, attribution:'&copy; OpenTopoMap, &copy; OpenStreetMap contributors'});
+const DARK = L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{maxZoom:19,
+  attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'});
+// Road casings and place names printed over the imagery — satellite alone is pretty and useless.
+const SATLBL = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
+  {maxZoom:19, attribution:''});
+
+SAT.addTo(map); SATLBL.addTo(map);
+L.control.layers({"Satellite":SAT,"Terrain":TERRAIN,"Dark map":DARK},
+                 {"Names on satellite":SATLBL},{position:"topright"}).addTo(map);
 
 const FERRY_OUT = [[D.points.LANDEY.lat,D.points.LANDEY.lon],[D.points.HEIMAPORT.lat,D.points.HEIMAPORT.lon]];
 const layers = {}, labels = {}, marks = {};
@@ -374,8 +400,9 @@ function rebuildMarkers(){
              + `<br><span style="color:#8a97a5">${pp.lat.toFixed(5)}, ${pp.lon.toFixed(5)}</span>`
              + `<br><a target="_blank" rel="noopener" href="${gmap(pp.lat,pp.lon)}">Open in Google Maps ↗</a>`;
       }).join("<hr style='border:none;border-top:1px solid #ddd;margin:6px 0'>");
-      L.marker(gr.ll,{icon: single ? numIcon(d.color, txt) : pillIcon(d.color, txt), zIndexOffset: single?0:400}).addTo(d._mk)
+      const mk = L.marker(gr.ll,{icon: single ? numIcon(d.color, txt) : pillIcon(d.color, txt), zIndexOffset: single?0:400}).addTo(d._mk)
         .bindPopup(html + (single ? "" : "<br><span style=\'color:#8a97a5\'>Zoom in to separate these stops</span>"));
+      mk._stopNs = gr.ns;   // so a sidebar click can find its own pin again after a rebuild
     });
   });
 }
@@ -411,7 +438,7 @@ DAYS.forEach(d=>{
       if(r.projNote) sub += `<div class="legln" style="color:#f4d79a">${r.projNote}</div>`;
       if(r.dwell)    sub += `<div class="legln">${r.dwell} min on the ground</div>`;
       if(r.wait)     sub += `<div class="legln" style="color:#9fdcae">${r.wait} min spare before the booking</div>`;
-      if(r.slip)     sub += `<div class="late">${r.slip} min past the booked ${r.stated}</div>`;
+      if(r.squeeze)  sub += `<div class="late"><b>${r.stated} is fixed — find ${r.squeeze} min before here.</b> Cut it from the stops above, not from this one.</div>`;
     }
 
     let badge = "";
@@ -421,11 +448,11 @@ DAYS.forEach(d=>{
     }
     const gm = r.key ? `<a class="gm" target="_blank" rel="noopener" href="${gmap(D.points[r.key].lat, D.points[r.key].lon)}">Open in Google Maps ↗</a>` : "";
     const leg = r.leg ? `<div class="legln">↓ ${r.leg.km} km · ${r.leg.min} min drive</div>` : "";
-    return `${leg}<div class="stop"><div class="${cls}" style="${bg}">${r.n}</div>
+    return `${leg}<div class="stop"${r.key?` data-key="${r.key}" data-n="${r.n}" title="Show on the map"`:""}><div class="${cls}" style="${bg}">${r.n}</div>
       <div class="sc"><div class="sn">${nm}</div><div class="sd">${r.desc}</div>${sub}<div class="provrow">${badge}${gm}</div></div>
       <div class="tw">${clock}</div></div>`;
   }).join("");
-  const lateTotal = sched.filter(r => MODE==="booked" ? r.late : r.slip).length;
+  const lateTotal = sched.filter(r => MODE==="booked" ? r.late : r.squeeze).length;
   const endProj = sched.filter(r=>r.proj!=null).slice(-1)[0];
   el.innerHTML = `
    <div class="dayhead"><span class="dot" style="background:${d.color}"></span>
@@ -441,9 +468,32 @@ DAYS.forEach(d=>{
     else { map.removeLayer(layers[d.id]); map.removeLayer(labels[d.id]); if(map.hasLayer(marks[d.id])) map.removeLayer(marks[d.id]); }
     frameSelection(); syncLabels(); rebuildMarkers();
   };
+  // Click any stop row to fly the map to that pin and pop it open. The whole row is the
+  // target except the Google Maps link, which keeps doing its own thing.
+  el.querySelectorAll(".stop[data-key]").forEach(row=>{
+    row.addEventListener("click", ev=>{
+      if(ev.target.closest("a")) return;
+      focusStop(d, row.dataset.key, +row.dataset.n, el);
+    });
+  });
   if(openIds.has(d.id)) el.classList.add("open");
   list.appendChild(el);
 });
+}
+
+function focusStop(d, key, n, el){
+  if(!map.hasLayer(layers[d.id])){          // day not plotted yet — turn it on first
+    layers[d.id].addTo(map);
+    el.classList.add("open"); el.classList.add("shown");
+  }
+  const p = D.points[key];
+  map.flyTo([p.lat, p.lon], 15, {duration:.8});
+  map.once("moveend", ()=>{
+    syncLabels(); rebuildMarkers();
+    let target = null;
+    d._mk.eachLayer(m=>{ if(!target && m._stopNs && m._stopNs.indexOf(n) !== -1) target = m; });
+    if(target) target.openPopup();
+  });
 }
 renderSidebar();
 

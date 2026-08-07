@@ -28,8 +28,8 @@ Every stop is tagged in the UI with where its coordinate came from:
 | **OPENSTREETMAP** | Named OpenStreetMap feature |
 | **NOT VERIFIED** | No confirmed coordinate — do not rely on it |
 
-Three stops are currently **NOT VERIFIED**: Diamond Beach, the Greenhouse Hotel food hall
-in Hveragerði, and the Fagradalsfjall trailhead.
+One stop is currently **NOT VERIFIED**: Diamond Beach. The Greenhouse Hotel food hall and the
+Fagradalsfjall road head were confirmed from Google Maps place URLs on 5 Aug 2026.
 
 ## What is exact and what is not
 - **Booked times** are exact, taken from the operator itinerary and the issued ferry ticket.
