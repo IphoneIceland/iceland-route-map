@@ -481,6 +481,9 @@ DAYS.forEach(d=>{
 });
 }
 
+// Tap a second stop before the first flight lands and the old handler would fire on the
+// new flight's moveend — opening the pin you just left. Only ever one pending handler.
+let PENDING_FOCUS = null;
 function focusStop(d, key, n, el){
   if(!map.hasLayer(layers[d.id])){          // day not plotted yet — turn it on first
     layers[d.id].addTo(map);
@@ -489,13 +492,16 @@ function focusStop(d, key, n, el){
   const p = D.points[key];
   // 14, not 15. Esri imagery runs out over rural Iceland above ~17 and the walking stops
   // on Heimaey were flying past it into grey. maxNativeZoom upscales rather than blanking.
-  map.flyTo([p.lat, p.lon], 14, {duration:.8});
-  map.once("moveend", ()=>{
+  if(PENDING_FOCUS){ map.off("moveend", PENDING_FOCUS); PENDING_FOCUS = null; }
+  PENDING_FOCUS = function(){
+    map.off("moveend", PENDING_FOCUS); PENDING_FOCUS = null;
     syncLabels(); rebuildMarkers();
     let target = null;
     d._mk.eachLayer(m=>{ if(!target && m._stopNs && m._stopNs.indexOf(n) !== -1) target = m; });
     if(target) target.openPopup();
-  });
+  };
+  map.on("moveend", PENDING_FOCUS);
+  map.flyTo([p.lat, p.lon], 14, {duration:.6});
 }
 renderSidebar();
 
