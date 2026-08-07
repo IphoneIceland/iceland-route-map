@@ -278,14 +278,14 @@ function schedule(d){
 const map = L.map("map").setView([64.1,-19.6],7);
 
 const SAT = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-  {maxZoom:19, attribution:'Imagery &copy; Esri, Maxar, Earthstar Geographics'});
+  {maxZoom:19, maxNativeZoom:17, attribution:'Imagery &copy; Esri, Maxar, Earthstar Geographics'});
 const TERRAIN = L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-  {maxZoom:17, attribution:'&copy; OpenTopoMap, &copy; OpenStreetMap contributors'});
+  {maxZoom:19, maxNativeZoom:15, attribution:'&copy; OpenTopoMap, &copy; OpenStreetMap contributors'});
 const DARK = L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{maxZoom:19,
   attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'});
 // Road casings and place names printed over the imagery — satellite alone is pretty and useless.
 const SATLBL = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
-  {maxZoom:19, attribution:''});
+  {maxZoom:19, maxNativeZoom:16, attribution:''});
 
 SAT.addTo(map); SATLBL.addTo(map);
 L.control.layers({"Satellite":SAT,"Terrain":TERRAIN,"Dark map":DARK},
@@ -487,7 +487,9 @@ function focusStop(d, key, n, el){
     el.classList.add("open"); el.classList.add("shown");
   }
   const p = D.points[key];
-  map.flyTo([p.lat, p.lon], 15, {duration:.8});
+  // 14, not 15. Esri imagery runs out over rural Iceland above ~17 and the walking stops
+  // on Heimaey were flying past it into grey. maxNativeZoom upscales rather than blanking.
+  map.flyTo([p.lat, p.lon], 14, {duration:.8});
   map.once("moveend", ()=>{
     syncLabels(); rebuildMarkers();
     let target = null;
