@@ -42,6 +42,8 @@
   .tmb{font:400 10px/1.3 -apple-system,sans-serif;color:#6f8090;white-space:nowrap}
   .fin{color:#9fe0ff;font-weight:600}
   button.on{border-color:#5ec8f2;color:#5ec8f2}
+  #langs{display:inline-flex;gap:6px}
+  #langs button{padding:6px 9px}
   .tm{flex:none;font:600 11.5px/1.4 -apple-system,sans-serif;color:#cfe6f4;font-variant-numeric:tabular-nums;white-space:nowrap;padding-top:2px}
   .tm.none{color:#4d5a66;font-weight:400}
   .provrow{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap}
@@ -76,6 +78,7 @@
       <button id="none">Hide all</button>
       <button id="fit">Fit Iceland</button>
       <button id="mode">Clock: booked times</button>
+      <span id="langs"></span>
     </div>
     <div id="days"></div>
     <div id="foot">Drive times: OSRM estimates, not coach times. Basemap © OpenStreetMap / CARTO.
@@ -86,8 +89,25 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="routes-data.js"></script>
+<script src="i18n.js"></script>
 <script>
 const D = window.__ROUTES__;
+
+// ---- Translation. Baked in, no network. English is the source and needs no table:
+// a missing key anywhere falls straight back to the English string, so a half-finished
+// language degrades to English rather than to blank.
+const I18N = window.__I18N__ || {};
+let LANG = "en";
+function LD(){ return LANG === "en" ? null : I18N[LANG]; }
+function t(key, en){ const d = LD(); return (d && d.ui && d.ui[key] != null) ? d.ui[key] : en; }
+function tf(key, en, ...a){ const d = LD(); const f = d && d.ui && d.ui[key];
+  return typeof f === "function" ? f(...a) : en; }
+function tStop(id, i, en){ const d = LD();
+  return (d && d.stops && d.stops[id] && d.stops[id][i] != null) ? d.stops[id][i] : en; }
+function tTitle(id, en){ const d = LD(); return (d && d.dayTitles && d.dayTitles[id]) || en; }
+function tDate(id, en){ const d = LD(); return (d && d.dates && d.dates[id]) || en; }
+function tProv(code, i, en){ const d = LD();
+  return (d && d.prov && d.prov[code] && d.prov[code][i] != null) ? d.prov[code][i] : en; }
 
 // ---- Days. Each stop: [pointKey|null, description, kind]  kind: ""|"ferry"|"unplotted"
 const PROV = {"UMI": "rj", "KAPLA": "rj", "NAES": "rj", "JOKULS": "rj", "NESJA": "rj", "STOP6": "rj", "THJOD": "gm", "ELEPHANT": "gm", "KEF": "osm", "ALMAR": "osm", "HVOLS": "osm", "SKOGA": "osm", "SELJA": "osm", "VIK": "osm", "REYNIS": "osm", "LANDEY": "osm", "HEIMAPORT": "osm", "HERJDAL": "osm", "STORHOFDI": "osm", "ELDFELL": "osm", "ELDHEIMAR": "osm", "KLAUSTUR": "osm", "FREYSNES": "osm", "FROST": "osm", "HJOKULS": "osm", "FJADRAR": "osm", "HGEYSIR": "osm", "STROKKUR": "osm", "GEYSIR": "osm", "BSI": "osm", "THING": "osm", "KERID": "osm", "FRID": "osm", "GULL": "osm", "ULFLJOT": "osm", "SELTUN": "osm", "PAPAS": "osm", "GRIND": "osm", "SKY": "osm", "GRODUR": "gm", "FAGRA": "gm", "DIAMOND": "bad"};
@@ -223,7 +243,7 @@ let MODE = "booked";
 
 function schedule(d){
   const sch = SCHED[d.id]||{}, end = SCHED_END[d.id]||{}, dw = DWELL[d.id]||{};
-  const rows = d.stops.map((s,i)=>({ n:i+1, key:s[0], desc:s[1], kind:s[2],
+  const rows = d.stops.map((s,i)=>({ n:i+1, key:s[0], desc:tStop(d.id,i,s[1]), kind:s[2],
       stated:sch[i+1]||"", statedEnd:end[i+1]||"", label:s[3]||"", dwell: dw[i+1]==null?0:dw[i+1] }));
 
   // drive minutes into each stop
@@ -311,12 +331,12 @@ DAYS.forEach(d=>{
 
   if(d.ferry){
     L.polyline(FERRY_OUT,{color:"#ffffff",weight:3,opacity:.95,dashArray:"8,9"}).addTo(g)
-      .bindPopup("<b>Ferry</b><br>Landeyjahöfn ⇄ Heimaey<br>Outbound sailing time not stated in the itinerary; return stated as 17:00.");
+      .bindPopup(`<b>${t("ferryTitle","Ferry")}</b><br>${t("ferryPopup","Landeyjahöfn ⇄ Heimaey")}`);
   }
   if(d.id==="d2" && D.spurs){
     Object.values(D.spurs).forEach(sp=>{
       L.polyline([sp.road, sp.point],{color:"#ffffff",weight:2,opacity:.75,dashArray:"3,6"}).addTo(g)
-        .bindPopup(`<b>On foot</b><br>~${sp.walk_m} m from the nearest road point`);
+        .bindPopup(`<b>${t("onFoot","On foot")}</b><br>~${sp.walk_m} ${t("fromRoad","m from the nearest road point")}`);
     });
   }
 
@@ -393,15 +413,15 @@ function rebuildMarkers(){
                 : (contiguous ? sorted[0]+"–"+sorted[sorted.length-1] : sorted.join(" · "));
       const html = gr.items.map(o=>{
         const pp = D.points[o.key];
-        const t = o.time ? `<div style="font-weight:700;color:#0b5f86">${o.time}</div>` : "";
+        const tm = o.time ? `<div style="font-weight:700;color:#0b5f86">${o.time}</div>` : "";
         const pv = PROVLBL[PROV[o.key]||"bad"];
-        return `${t}<b>Stop ${o.n} — ${pp.name}</b><br>${o.desc}`
-             + `<br><b style="color:#0b5f86">Source: ${pv[0]}</b>`
+        return `${tm}<b>${t("stop","Stop")} ${o.n} — ${pp.name}</b><br>${tStop(d.id,o.n-1,o.desc)}`
+             + `<br><b style="color:#0b5f86">${t("source","Source")}: ${tProv(PROV[o.key]||"bad",0,pv[0])}</b>`
              + `<br><span style="color:#8a97a5">${pp.lat.toFixed(5)}, ${pp.lon.toFixed(5)}</span>`
              + `<br><a target="_blank" rel="noopener" href="${gmap(pp.lat,pp.lon)}">Open in Google Maps ↗</a>`;
       }).join("<hr style='border:none;border-top:1px solid #ddd;margin:6px 0'>");
       const mk = L.marker(gr.ll,{icon: single ? numIcon(d.color, txt) : pillIcon(d.color, txt), zIndexOffset: single?0:400}).addTo(d._mk)
-        .bindPopup(html + (single ? "" : "<br><span style=\'color:#8a97a5\'>Zoom in to separate these stops</span>"));
+        .bindPopup(html + (single ? "" : `<br><span style="color:#8a97a5">${t("zoomToSeparate","Zoom in to separate these stops")}</span>`));
       mk._stopNs = gr.ns;   // so a sidebar click can find its own pin again after a rebuild
     });
   });
@@ -428,26 +448,26 @@ DAYS.forEach(d=>{
     let clock, sub = "";
     if(MODE === "booked"){
       clock = booked ? `<span class="tm">${booked}</span>` : `<span class="tm none">—</span>`;
-      if(r.unknownGap) sub = `<div class="legln" style="color:#f4d79a">crossing time unknown — clock estimates stop here</div>`;
-      else if(r.late)  sub = `<div class="late">${r.late} min late — earliest arrival ${toHHMM(r.earliest)} vs booked ${r.stated}</div>`;
-      else if(r.earliest!=null && !r.stated) sub = `<div class="legln">earliest here ≈ ${toHHMM(r.earliest)}</div>`;
+      if(r.unknownGap) sub = `<div class="legln" style="color:#f4d79a">${t("crossingUnknown","crossing time unknown — clock estimates stop here")}</div>`;
+      else if(r.late)  sub = `<div class="late">${tf("lateBy",`${r.late} min late — earliest arrival ${toHHMM(r.earliest)} vs booked ${r.stated}`, r.late, toHHMM(r.earliest), r.stated)}</div>`;
+      else if(r.earliest!=null && !r.stated) sub = `<div class="legln">${t("earliest","earliest here")} ≈ ${toHHMM(r.earliest)}</div>`;
     } else {
       clock = r.proj!=null
         ? `<span class="tm proj">${toHHMM(r.proj)}</span>${booked?`<span class="tmb">booked ${booked}</span>`:""}`
         : `<span class="tm none">—</span>`;
       if(r.projNote) sub += `<div class="legln" style="color:#f4d79a">${r.projNote}</div>`;
-      if(r.dwell)    sub += `<div class="legln">${r.dwell} min on the ground</div>`;
-      if(r.wait)     sub += `<div class="legln" style="color:#9fdcae">${r.wait} min spare before the booking</div>`;
-      if(r.squeeze)  sub += `<div class="late"><b>${r.stated} is fixed — find ${r.squeeze} min before here.</b> Cut it from the stops above, not from this one.</div>`;
+      if(r.dwell)    sub += `<div class="legln">${r.dwell} ${t("onGround","min on the ground")}</div>`;
+      if(r.wait)     sub += `<div class="legln" style="color:#9fdcae">${r.wait} ${t("spare","min spare before the booking")}</div>`;
+      if(r.squeeze)  sub += `<div class="late"><b>${tf("fixedFind",`${r.stated} is fixed — find ${r.squeeze} min before here.`, r.stated, r.squeeze)}</b> ${t("fixedCut","Cut it from the stops above, not from this one.")}</div>`;
     }
 
     let badge = "";
     if(r.key){
-      const t = PROV[r.key] || "bad", L = PROVLBL[t];
-      badge = `<span class="prov" style="color:${L[1]};border-color:${L[1]}44" title="${L[2]}">${L[0]}</span>`;
+      const pk = PROV[r.key] || "bad", L = PROVLBL[pk];
+      badge = `<span class="prov" style="color:${L[1]};border-color:${L[1]}44" title="${tProv(pk,1,L[2])}">${tProv(pk,0,L[0])}</span>`;
     }
-    const gm = r.key ? `<a class="gm" target="_blank" rel="noopener" href="${gmap(D.points[r.key].lat, D.points[r.key].lon)}">Open in Google Maps ↗</a>` : "";
-    const leg = r.leg ? `<div class="legln">↓ ${r.leg.km} km · ${r.leg.min} min drive</div>` : "";
+    const gm = r.key ? `<a class="gm" target="_blank" rel="noopener" href="${gmap(D.points[r.key].lat, D.points[r.key].lon)}">${t("openInMaps","Open in Google Maps ↗")}</a>` : "";
+    const leg = r.leg ? `<div class="legln">↓ ${r.leg.km} km · ${r.leg.min} ${t("drive","min drive")}</div>` : "";
     return `${leg}<div class="stop"${r.key?` data-key="${r.key}" data-n="${r.n}" title="Show on the map"`:""}><div class="${cls}" style="${bg}">${r.n}</div>
       <div class="sc"><div class="sn">${nm}</div><div class="sd">${r.desc}</div>${sub}<div class="provrow">${badge}${gm}</div></div>
       <div class="tw">${clock}</div></div>`;
@@ -456,10 +476,10 @@ DAYS.forEach(d=>{
   const endProj = sched.filter(r=>r.proj!=null).slice(-1)[0];
   el.innerHTML = `
    <div class="dayhead"><span class="dot" style="background:${d.color}"></span>
-     <span class="t">${d.date} — ${d.title}</span>
-     <span class="m">${d.stops.length} stops<br>${Math.round(km)} km · ${Math.floor(mn/60)}h${String(mn%60).padStart(2,"0")}${lateTotal?`<br><span class="badlate">${lateTotal} timing clash${lateTotal>1?"es":""}</span>`:""}${MODE==="realistic"&&endProj?`<br><span class="fin">ends ≈ ${toHHMM(endProj.proj)}</span>`:""}</span></div>
+     <span class="t">${tDate(d.id,d.date)} — ${tTitle(d.id,d.title)}</span>
+     <span class="m">${d.stops.length} ${t("stops","stops")}<br>${Math.round(km)} km · ${Math.floor(mn/60)}h${String(mn%60).padStart(2,"0")}${lateTotal?`<br><span class="badlate">${lateTotal} ${lateTotal>1?t("clashes","timing clashes"):t("clash","timing clash")}</span>`:""}${MODE==="realistic"&&endProj?`<br><span class="fin">${t("ends","ends ≈")} ${toHHMM(endProj.proj)}</span>`:""}</span></div>
    <div class="body">${rows}
-     ${(d.flags||[]).map(f=>`<div class="flag"><b>Check this:</b> ${f}</div>`).join("")}
+     ${(d.flags||[]).map(f=>`<div class="flag"><b>${t("checkThis","Check this:")}</b> ${f}</div>`).join("")}
      ${(d.notes||[]).map(n=>`<div class="note">${n}</div>`).join("")}</div>`;
   el.querySelector(".dayhead").onclick=()=>{
     const open = el.classList.toggle("open");
@@ -519,16 +539,55 @@ document.getElementById("fit").onclick=()=>map.setView([64.1,-19.6],7);
 
 document.getElementById("mode").onclick=()=>{
   MODE = MODE==="booked" ? "realistic" : "booked";
-  document.getElementById("mode").textContent =
-    MODE==="booked" ? "Clock: booked times" : "Clock: realistic (with stop time)";
-  document.getElementById("mode").classList.toggle("on", MODE==="realistic");
+  applyChrome();
   const openIds = new Set([...document.querySelectorAll(".day.open")].map(e=>e.dataset.id));
   renderSidebar(openIds);
   rebuildMarkers();
 };
 
+// ---- Language. Everything outside the day list is set from here, so switching
+// language never leaves half the screen in English.
+function applyChrome(){
+  const m = document.getElementById("mode");
+  m.textContent = MODE==="booked" ? t("clockBooked","Clock: booked times")
+                                  : t("clockReal","Clock: realistic (with stop time)");
+  m.classList.toggle("on", MODE==="realistic");
+  document.getElementById("all").textContent  = t("showAll","Show all days");
+  document.getElementById("none").textContent = t("hideAll","Hide all");
+  document.getElementById("fit").textContent  = t("fit","Fit Iceland");
+  document.getElementById("zhint").textContent = t("zoomHint","Zoom in further to show place names");
+  document.querySelector("#head p").textContent = t("subtitle","6–13 Aug 2026");
+  document.getElementById("foot").innerHTML =
+    t("foot","Drive times: OSRM estimates, not coach times.") +
+    ' Basemap © OpenStreetMap / CARTO.';
+  [...document.querySelectorAll("#langs button")].forEach(b=>
+    b.classList.toggle("on", b.dataset.lang === LANG));
+}
+
+function setLang(code){
+  LANG = code;
+  document.documentElement.lang = code;
+  applyChrome();
+  const openIds = new Set([...document.querySelectorAll(".day.open")].map(e=>e.dataset.id));
+  renderSidebar(openIds);
+  rebuildMarkers();
+}
+
+(function buildLangButtons(){
+  const wrap = document.getElementById("langs");
+  const codes = ["en", ...Object.keys(I18N)];
+  codes.forEach(code=>{
+    const b = document.createElement("button");
+    b.dataset.lang = code;
+    b.textContent = code === "en" ? "English" : (I18N[code] && I18N[code].label) || code.toUpperCase();
+    b.onclick = ()=>setLang(code);
+    wrap.appendChild(b);
+  });
+})();
+
 (function initialView(){
   map.setView([64.1,-19.6],7);
+  applyChrome();
   syncLabels(); rebuildMarkers();
 })();   // open the Westman Islands day first
 </script>
