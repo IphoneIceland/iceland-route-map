@@ -112,9 +112,9 @@ function tProv(code, i, en){ const d = LD();
 // ---- Days. Each stop: [pointKey|null, description, kind]  kind: ""|"ferry"|"unplotted"
 const PROV = {"UMI": "rj", "KAPLA": "rj", "NAES": "rj", "JOKULS": "rj", "NESJA": "rj", "STOP6": "rj", "THJOD": "gm", "ELEPHANT": "gm", "KEF": "osm", "ALMAR": "osm", "HVOLS": "osm", "SKOGA": "osm", "SELJA": "osm", "VIK": "osm", "REYNIS": "osm", "LANDEY": "osm", "HEIMAPORT": "osm", "HERJDAL": "osm", "STORHOFDI": "osm", "ELDFELL": "osm", "ELDHEIMAR": "osm", "KLAUSTUR": "osm", "FREYSNES": "osm", "FROST": "osm", "HJOKULS": "osm", "FJADRAR": "osm", "HGEYSIR": "osm", "STROKKUR": "osm", "GEYSIR": "osm", "BSI": "osm", "THING": "osm", "KERID": "osm", "FRID": "osm", "GULL": "osm", "ULFLJOT": "osm", "SELTUN": "osm", "PAPAS": "osm", "GRIND": "osm", "SKY": "osm", "GRODUR": "gm", "FAGRA": "gm", "DIAMOND": "bad"};
 const PROVLBL = {"rj": ["your pin", "#7ee081", "Your own dropped Google Maps pin."], "gm": ["Google Maps", "#5ec8f2", "Named Google Maps place, coordinates read from the place URL."], "osm": ["OpenStreetMap", "#93a1b0", "Named OpenStreetMap feature."], "bad": ["NOT VERIFIED", "#f26e6e", "No confirmed coordinate — do not rely on this pin."]};
-const DWELL = {"d1": {1: 75, 2: 25, 3: 0, 4: 35, 5: 35, 6: 50, 7: 40, 8: 0}, "d2": {1: 0, 2: 30, 3: 40, 4: 10, 5: 30, 6: 15, 7: 20, 8: 20, 9: 25, 10: 40, 11: 45, 12: 60, 13: 30, 14: 40, 15: 10, 16: 0}, "d3": {1: 0, 2: 30, 3: 5, 4: 60, 5: 55, 6: 75, 7: 0}, "d4": {1: 0, 2: 45, 3: 10, 4: 40, 5: 0, 6: 40}, "d5": {1: 0, 2: 35, 3: 30, 4: 90, 5: 45, 6: 45, 7: 0}, "d6": {1: 0, 2: 20, 3: 25, 4: 0}, "d7": {1: 0, 2: 25, 3: 120, 4: 50, 5: 45, 6: 105, 7: 0}};
+const DWELL = {"d1": {1: 75, 2: 25, 3: 0, 4: 35, 5: 35, 6: 50, 7: 40, 8: 0}, "d2": {1: 0, 2: 30, 3: 40, 4: 10, 5: 30, 6: 15, 7: 20, 8: 20, 9: 25, 10: 40, 11: 45, 12: 60, 13: 30, 14: 40, 15: 10, 16: 0}, "d3": {1: 0, 2: 30, 3: 5, 4: 60, 5: 55, 6: 75, 7: 0}, "d4": {1: 0, 2: 15, 3: 15, 4: 60, 5: 0, 6: 15, 7: 60, 8: 0, 9: 40}, "d5": {1: 0, 2: 35, 3: 30, 4: 90, 5: 45, 6: 45, 7: 0}, "d6": {1: 0, 2: 20, 3: 25, 4: 0}, "d7": {1: 0, 2: 25, 3: 120, 4: 50, 5: 45, 6: 105, 7: 0}};
 const CROSSING_NOTE = "assumed 35 min crossing + 20 min vehicle loading";
-const SCHED = {"d1": {1: "06:25"}, "d2": {1: "08:50", 2: "09:30", 3: "10:00", 4: "10:40", 12: "15:00", 13: "17:30", 14: "18:00", 15: "18:40"}, "d3": {1: "08:30", 4: "12:30", 6: "15:10"}, "d4": {1: "08:00", 5: "~16:00"}, "d5": {1: "10:15", 2: "11:15", 3: "12:30", 4: "13:30", 5: "15:30", 6: "16:30"}, "d6": {1: "09:00"}, "d7": {1: "09:30", 2: "10:15", 3: "11:00", 4: "13:15", 5: "14:15", 6: "16:30", 7: "18:30"}};
+const SCHED = {"d1": {1: "06:25"}, "d2": {1: "08:50", 2: "09:30", 3: "10:00", 4: "10:40", 12: "15:00", 13: "17:30", 14: "18:00", 15: "18:40"}, "d3": {1: "08:30", 4: "12:30", 6: "15:10"}, "d4": {1: "09:00"}, "d5": {1: "10:15", 2: "11:15", 3: "12:30", 4: "13:30", 5: "15:30", 6: "16:30"}, "d6": {1: "09:00"}, "d7": {1: "09:30", 2: "10:15", 3: "11:00", 4: "13:15", 5: "14:15", 6: "16:30", 7: "18:30"}};
 const SCHED_END = {"d2": {3: "10:40", 14: "18:40"}, "d5": {2: "11:50", 3: "13:00", 4: "15:00", 5: "16:15"}, "d7": {2: "10:40", 3: "13:00", 4: "14:10", 5: "15:00"}};
 const DAYS = [
 {
@@ -173,14 +173,17 @@ const DAYS = [
  id:"d4", color:"#e07ec8", date:"Sun 9 Aug", title:"Hotel Jökulsárlón → Hveragerði → Hotel Geysir",
  roads:["d4"],
  stops:[
-  ["HJOKULS","Leave at 08:00, not the 09:00 in the email. As written this day is 422 km / 6h11 of driving in a 09:00\u201316:00 window. The hour is the only thing that makes it deliverable.",""],
-  ["FJADRAR","Fjaðrárgljúfur gorge hike. 141 km / 2h02 from the hotel. 60 min.",""],
-  ["VIK","Rest stop in Vík, 20 min.",""],
-  ["GRODUR","Late lunch at Greenhouse Hotel Food Hall, Hveragerði — as booked. 40 min. Pin now confirmed from your Google Maps link: The Greenhouse Hotel, 63.99648, -21.19064.",""],
-  ["HGEYSIR","Arrive Hotel Geysir, group overnight.",""],
+  ["HJOKULS","Leave at 09:00. Hotel arrival moved to 18:25 to make the stop list fit — 09:00 and a 16:00 arrival cannot both be true with these stops.",""],
+  ["FREYSNES","Leg-stretch, 15 min. On the road, costs nothing in driving.",""],
+  ["KLAUSTUR","Kirkjubæjarklaustur — fuel and WC, 15 min.",""],
+  ["FJADRAR","Fjaðrárgljúfur gorge hike. 60 min.",""],
+  ["VIK","Vík — drive-through, no stop.",""],
+  ["HVOLS","Hvolsvöllur, 15 min.",""],
+  ["GRODUR","Gróðurhúsið — Greenhouse Hotel Food Hall, Hveragerði. 60 min. Pin confirmed from your Google Maps link: The Greenhouse Hotel, 63.99648, -21.19064.",""],
+  ["HGEYSIR","Arrive Hotel Geysir 18:25, group overnight. Was 16:00 — arrangements being moved.",""],
   ["STROKKUR","Guided walk to Strokkur — 350 m from the hotel door, so the email\u2019s \u201cacross the street\u201d checks out.",""]],
- flags:["NO REORDER POSSIBLE. Fjaðrárgljúfur, Vík and Hveragerði already run east to west in geographic order, so there is no dead mileage to cut by resequencing. The 128 km overshoot past the Geysir turnoff to Hveragerði and back is built into the stop list itself, and the operator confirmed it on 5 Aug: \u201ccorrect, you will go from Vík to hveragerði and then to Hotel Geysir.\u201d Measured cost of that overshoot: 37 minutes.","Even leaving at 08:00 this is the hardest day of the week \u2014 422 km / 6h11 with the group, then 106 km / 1h43 empty to Reykjavík. That is 7h54 of driving in one duty period. Check it against the driver\u2019s hours."],
- notes:["Projected from an 08:00 start: Fjaðrárgljúfur 10:05–11:05, Vík 12:10–12:30, Hveragerði 14:40–15:25, Hotel Geysir about 16:30, Strokkur on foot from the hotel.","From the 09:00 in the email you reach Hotel Geysir about 17:16, over an hour past the stated 4pm."]
+ flags:["THREE DRIVE TIMES ON THIS DAY ARE DERIVED, NOT OSRM LEGS. Hotel Jökulsárlón→Freysnes (63 min) is summed backwards from Saturday's legs on the same road; Kirkjubæjarklaustur→Fjaðrárgljúfur (10 min) is the side road off Route 1 and has no leg at all; Vík→Hvolsvöllur (68 min) is Vík→Hveragerði 126 minus Hvolsvöllur→Hveragerði 58. The other four are exact. Treat these three as the softest numbers on the day.","NO REORDER POSSIBLE. Fjaðrárgljúfur, Vík and Hveragerði already run east to west in geographic order, so there is no dead mileage to cut by resequencing. The 128 km overshoot past the Geysir turnoff to Hveragerði and back is built into the stop list itself, and the operator confirmed it on 5 Aug: \u201ccorrect, you will go from Vík to hveragerði and then to Hotel Geysir.\u201d Measured cost of that overshoot: 37 minutes.","Even leaving at 08:00 this is the hardest day of the week \u2014 422 km / 6h11 with the group, then 106 km / 1h43 empty to Reykjavík. That is 7h54 of driving in one duty period. Check it against the driver\u2019s hours."],
+ notes:["From 09:00: Freysnes 10:05–10:20, Kirkjubæjarklaustur 11:25–11:40, Fjaðrárgljúfur 11:50–12:50, Vík through at 13:55, Hvolsvöllur 15:05–15:20, Gróðurhúsið 16:20–17:20, Hotel Geysir 18:25.","The arithmetic that settles it: 09:00 to 16:00 is 420 minutes and the driving alone is 383, leaving 37 minutes for every stop combined. The stop list asks for 165. That is why the hotel arrival moved rather than the stops."]
 },
 {
  id:"d5", color:"#c8a2f2", date:"Mon 10 Aug", title:"Golden Circle loop from Hotel Geysir",
