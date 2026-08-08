@@ -132,10 +132,10 @@ function tProv(code, i, en){ const d = LD();
 // ---- Days. Each stop: [pointKey|null, description, kind]  kind: ""|"ferry"|"unplotted"
 const PROV = {"UMI": "rj", "KAPLA": "rj", "NAES": "rj", "JOKULS": "rj", "NESJA": "rj", "STOP6": "rj", "THJOD": "gm", "ELEPHANT": "gm", "KEF": "osm", "ALMAR": "osm", "HVOLS": "osm", "SKOGA": "osm", "SELJA": "osm", "VIK": "osm", "REYNIS": "osm", "LANDEY": "osm", "HEIMAPORT": "osm", "HERJDAL": "osm", "STORHOFDI": "osm", "ELDFELL": "osm", "ELDHEIMAR": "osm", "KLAUSTUR": "osm", "FREYSNES": "osm", "FROST": "osm", "HJOKULS": "osm", "FJADRAR": "osm", "HGEYSIR": "osm", "STROKKUR": "osm", "GEYSIR": "osm", "BSI": "osm", "THING": "osm", "KERID": "osm", "FRID": "osm", "GULL": "osm", "ULFLJOT": "osm", "SELTUN": "osm", "PAPAS": "osm", "GRIND": "osm", "SKY": "osm", "GRODUR": "gm", "FAGRA": "gm", "SELFOSS": "gm", "DIAMOND": "bad"};
 const PROVLBL = {"rj": ["your pin", "#7ee081", "Your own dropped Google Maps pin."], "gm": ["Google Maps", "#5ec8f2", "Named Google Maps place, coordinates read from the place URL."], "osm": ["OpenStreetMap", "#93a1b0", "Named OpenStreetMap feature."], "bad": ["NOT VERIFIED", "#f26e6e", "No confirmed coordinate — do not rely on this pin."]};
-const DWELL = {"d1": {1: 75, 2: 25, 3: 0, 4: 35, 5: 35, 6: 50, 7: 40, 8: 0}, "d2": {1: 0, 2: 30, 3: 40, 4: 10, 5: 30, 6: 15, 7: 20, 8: 20, 9: 25, 10: 40, 11: 45, 12: 60, 13: 30, 14: 40, 15: 10, 16: 0}, "d3": {1: 0, 2: 30, 3: 5, 4: 60, 5: 55, 6: 75, 7: 0}, "d4": {1: 0, 2: 15, 3: 60, 4: 60, 5: 10, 6: 20, 7: 0, 8: 40}, "d5": {1: 0, 2: 35, 3: 30, 4: 90, 5: 45, 6: 45, 7: 0}, "d6": {1: 0, 2: 20, 3: 25, 4: 0}, "d7": {1: 0, 2: 25, 3: 120, 4: 50, 5: 45, 6: 105, 7: 0}};
+const DWELL = {"d1": {1: 75, 2: 25, 3: 0, 4: 35, 5: 35, 6: 50, 7: 40, 8: 0}, "d2": {1: 0, 2: 30, 3: 40, 4: 10, 5: 30, 6: 15, 7: 20, 8: 20, 9: 25, 10: 40, 11: 45, 12: 60, 13: 30, 14: 40, 15: 10, 16: 0}, "d3": {1: 0, 2: 30, 3: 5, 4: 60, 5: 55, 6: 75, 7: 0}, "d4": {1: 0, 2: 15, 3: 60, 4: 60, 5: 10, 6: 20, 7: 0, 8: 40}, "d5": {1: 0, 2: 20, 3: 30, 4: 90, 5: 45, 6: 45, 7: 0}, "d6": {1: 0, 2: 20, 3: 25, 4: 0}, "d7": {1: 0, 2: 25, 3: 120, 4: 50, 5: 45, 6: 105, 7: 0}};
 const CROSSING_NOTE = "assumed 35 min crossing + 20 min vehicle loading";
 const SCHED = {"d1": {1: "06:25"}, "d2": {1: "08:50", 2: "09:30", 3: "10:00", 4: "10:40", 12: "15:00", 13: "17:30", 14: "18:00", 15: "18:40"}, "d3": {1: "08:30", 4: "12:30", 6: "15:10"}, "d4": {1: "09:00"}, "d5": {1: "10:15", 2: "11:15", 3: "12:30", 4: "13:30", 5: "15:30", 6: "16:30"}, "d6": {1: "09:00"}, "d7": {1: "09:30", 2: "10:15", 3: "11:00", 4: "13:15", 5: "14:15", 6: "16:30", 7: "18:30"}};
-const SCHED_END = {"d2": {3: "10:40", 14: "18:40"}, "d5": {2: "11:50", 3: "13:00", 4: "15:00", 5: "16:15"}, "d7": {2: "10:40", 3: "13:00", 4: "14:10", 5: "15:00"}};
+const SCHED_END = {"d2": {3: "10:40", 14: "18:40"}, "d5": {2: "11:35", 3: "13:00", 4: "15:00", 5: "16:15"}, "d7": {2: "10:40", 3: "13:00", 4: "14:10", 5: "15:00"}};
 const DAYS = [
 {
  id:"d1", color:"#5ec8f2", date:"Thu 6 Aug", title:"Arrival + South Shore → Umi Hotel (reordered)",
@@ -207,7 +207,7 @@ const DAYS = [
  roads:["d5"],
  stops:[
   ["HGEYSIR","Pick up from Hotel Geysir at 10:30.",""],
-  ["THING","Þingvellir National Park, 11:15–12:00.",""],
+  ["THING","Þingvellir National Park. Out along road 360, Grafningsvegur efri, down the west side of Þingvallavatn.",""],
   ["KERID","Kerið crater, 12:30–13:00.",""],
   ["FRID","Friðheimar, 13:30–15:00. Restaurant fully booked; driver and guide use the guide-room.",""],
   ["GULL","Gullfoss, 15:30–16:15.",""],

@@ -112,7 +112,7 @@ es: {
     ],
     d5: [
       "Recogida en el Hotel Geysir a las 10:15.",
-      "Parque Nacional de Þingvellir, 11:15–11:50.",
+      "Parque Nacional de Þingvellir. Salida por la carretera 360, Grafningsvegur efri, por el lado oeste de Þingvallavatn.",
       "Cráter de Kerið, 12:30–13:00.",
       "Friðheimar, 13:30–15:00. Restaurante completo; conductor y guía usan la sala de guías.",
       "Gullfoss, 15:30–16:15.",
