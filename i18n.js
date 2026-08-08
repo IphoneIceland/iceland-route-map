@@ -105,7 +105,7 @@ es: {
       "Estiramiento de piernas. Está en la ruta, así que no cuesta nada de conducción.",
       "Caminata por el cañón.",
       "Almuerzo y descanso.",
-      "Parada de aseos en el Olís. CHINCHETA SIN VERIFICAR — esto es Selfoss en la Ruta 1, no la estación.",
+      "Parada de aseos.",
       "Noche del grupo.",
       "Paseo guiado — a 350 m de la puerta del hotel."
     ],
