@@ -37,7 +37,16 @@
   .sc{flex:1;min-width:0}
   .sn{font-size:12.5px;font-weight:600;line-height:1.35}
   .sd{font-size:11.5px;color:var(--mute);line-height:1.5;margin-top:1px}
-  .tw{flex:none;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px;padding-top:2px;min-width:80px}
+  .tw{display:none}
+  .tstrip{display:flex;flex-wrap:wrap;align-items:baseline;gap:7px;margin-top:8px;
+    font-variant-numeric:tabular-nums;line-height:1}
+  .tstrip .lb{font:700 8.5px/1 -apple-system,sans-serif;letter-spacing:.08em;color:#61707e;margin-right:2px}
+  .tstrip .v{font:700 14px/1 -apple-system,sans-serif;color:#e8edf2}
+  .tstrip .v.dep{color:#9fe0ff}
+  .tstrip .dw{padding:2px 7px;border:1px solid #3a2f1a;background:#2a2314;border-radius:9px;
+    font:700 10px/1.3 -apple-system,sans-serif;color:#f2c98a;white-space:nowrap}
+  .tstrip .dr{font:600 11px/1 -apple-system,sans-serif;color:#8fb6cc;white-space:nowrap}
+  .tstrip .sep{color:#39434e}
   .tm.proj{color:#9fe0ff}
   .tmb{font:400 10px/1.3 -apple-system,sans-serif;color:#6f8090;white-space:nowrap}
   .fin{color:#9fe0ff;font-weight:600}
@@ -184,13 +193,13 @@ const DAYS = [
  id:"d4", color:"#e07ec8", date:"Sun 9 Aug", title:"Hotel Jökulsárlón → Hveragerði → Hotel Geysir",
  roads:["d4"],
  stops:[
-  ["HJOKULS","Leave at 09:00. Hotel arrival 17:10 on Google drive times.",""],
-  ["FREYSNES","Leg-stretch, 15 min. On the road, costs nothing in driving.",""],
-  ["FJADRAR","Fjaðrárgljúfur gorge hike. 60 min.",""],
-  ["VIK","Vík — 20 min. WC and break, after the hike. The only comfort stop left on the day.",""],
-  ["GRODUR","Gróðurhúsið — Greenhouse Hotel Food Hall, Hveragerði. 60 min. Pin confirmed from your Google Maps link: The Greenhouse Hotel, 63.99648, -21.19064.",""],
-  ["HGEYSIR","Arrive Hotel Geysir 17:10, group overnight. Was 16:00 — arrangements being moved.",""],
-  ["STROKKUR","Guided walk to Strokkur — 350 m from the hotel door, so the email\u2019s \u201cacross the street\u201d checks out.",""]],
+  ["HJOKULS","",""],
+  ["FREYSNES","Leg-stretch. On the road, so it costs nothing in driving.",""],
+  ["FJADRAR","Gorge hike.",""],
+  ["VIK","WC and break. The only comfort stop left on the day.",""],
+  ["GRODUR","Gróðurhúsið — the Greenhouse Hotel food hall.",""],
+  ["HGEYSIR","Group overnight.",""],
+  ["STROKKUR","Guided walk — 350 m from the hotel door.",""]],
 },
 {
  id:"d5", color:"#c8a2f2", date:"Mon 10 Aug", title:"Golden Circle loop from Hotel Geysir",
@@ -448,7 +457,7 @@ DAYS.forEach(d=>{
   const mn = d.roads.reduce((a,k)=>a+D.routes[k].duration_min,0);
   const el = document.createElement("div"); el.className="day"; el.dataset.id = d.id;
   const sched = schedule(d);
-  const rows = sched.map(r=>{
+  const rows = sched.map((r,i)=>{
     const cls = r.kind==="ferry" ? "num ferry" : (r.kind==="unplotted" ? "num unplot" : "num");
     const bg  = r.kind==="" ? `background:${d.color}` : "";
     const nm  = r.key ? D.points[r.key].name : (r.label || (r.kind==="ferry" ? "Ferry crossing" : "Stop"));
@@ -495,10 +504,31 @@ DAYS.forEach(d=>{
       badge = `<span class="prov" style="color:${L[1]};border-color:${L[1]}44" title="${tProv(pk,1,L[2])}">${tProv(pk,0,L[0])}</span>`;
     }
     const gm = r.key ? `<a class="gm" target="_blank" rel="noopener" href="${gmap(D.points[r.key].lat, D.points[r.key].lon)}">${t("openInMaps","Open in Google Maps ↗")}</a>` : "";
-    const leg = r.leg ? `<div class="driveln">↓ ${r.leg.min} ${t("drive","min drive")}<span class="km">${r.leg.km} km</span><span class="bar"></span></div>` : "";
+    const leg = "";
+    // One line along the bottom, left to right, in the order you actually need it:
+    // arrive · how long you are there · depart · how long to the next stop.
+    const nxt = sched[i+1];
+    const drive = nxt && nxt.leg ? nxt.leg : null;
+    const S = [];
+    if(MODE === "realistic" && r.proj != null){
+      if(isStart) S.push(`<span class="lb">DEPART</span><span class="v dep">${toHHMM(r.proj)}</span>`);
+      else {
+        S.push(`<span class="lb">ARRIVE</span><span class="v">${toHHMM(r.proj)}</span>`);
+        if(r.dwell){
+          S.push(`<span class="dw">${r.dwell} min</span>`);
+          S.push(`<span class="lb">DEPART</span><span class="v dep">${toHHMM(r.proj + r.dwell)}</span>`);
+        }
+      }
+    } else if(r.stated){
+      S.push(`<span class="lb">${isStart?"DEPART":"BOOKED"}</span><span class="v">${r.stated}${r.statedEnd?"–"+r.statedEnd:""}</span>`);
+    } else if(r.earliest != null){
+      S.push(`<span class="lb">ARRIVE</span><span class="v">${toHHMM(r.earliest)}</span>`);
+    }
+    if(drive) S.push(`<span class="dr">↓ ${drive.min} ${t("drive","min drive")} · ${drive.km} km</span>`);
+    const strip = S.length ? `<div class="tstrip">${S.join('<span class="sep">·</span>')}</div>` : "";
     return `${leg}<div class="stop"${r.key?` data-key="${r.key}" data-n="${r.n}"`:""}><div class="${cls}" style="${bg}">${r.n}</div>
-      <div class="sc"><div class="sn">${nm}</div><div class="sd">${r.desc}</div>${sub}<div class="provrow">${badge}${gm}</div></div>
-      <div class="tw">${clock}</div></div>`;
+      <div class="sc"><div class="sn">${nm}</div><div class="sd">${r.desc}</div>${strip}${sub}<div class="provrow">${badge}${gm}</div></div>
+      </div>`;
   }).join("");
   const lateTotal = sched.filter(r => MODE==="booked" ? r.late : r.squeeze).length;
   const endProj = sched.filter(r=>r.proj!=null).slice(-1)[0];
