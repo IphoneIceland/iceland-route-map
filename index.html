@@ -251,7 +251,10 @@ function toHHMM(m){ m=Math.round(m); const h=Math.floor(m/60)%24; return String(
 // Two clocks:
 //   "booked"    = the times the operator stated, plus earliest-possible arrival from drive time only
 //   "realistic" = projected clock from the day's first booked time, adding drive AND time on the ground
-let MODE = "booked";
+// Realistic is the default. The booked clock only shows times the operator stated, which on
+// most days is one or two rows — no departures, no time on the ground. That is not the view
+// you want open when you glance at this on the coach.
+let MODE = "realistic";
 
 function schedule(d){
   const sch = SCHED[d.id]||{}, end = SCHED_END[d.id]||{}, dw = DWELL[d.id]||{};
