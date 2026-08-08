@@ -467,9 +467,15 @@ DAYS.forEach(d=>{
       + (dep ? `<div class="tlab">DEPART</div><div class="tbig dep">${dep}</div>` : "")
       + (bookedTxt ? `<div class="tbook">booked ${bookedTxt}</div>` : "")
       + `</div>`;
+    // The first stop of a day is where the coach leaves from — labelling it ARRIVE is wrong.
+    // Unless it has time on the ground (day 1 lands at KEF and sits for 75 min), in which
+    // case both labels are true and both are shown.
+    const isStart = r.n === 1 && !r.dwell;
     let clock, sub = "";
     if(MODE === "booked"){
-      clock = r.stated
+      clock = isStart && r.stated
+        ? `<div class="tblk"><div class="tlab">DEPART</div><div class="tbig dep">${r.stated}</div></div>`
+        : r.stated
         ? block(r.stated, null, r.statedEnd || null, null)
         : (r.earliest != null ? block(toHHMM(r.earliest), null, null, null)
                               : `<span class="tm none">—</span>`);
@@ -477,9 +483,10 @@ DAYS.forEach(d=>{
       else if(r.late)  sub = `<div class="late">${tf("lateBy",`${r.late} min late — earliest arrival ${toHHMM(r.earliest)} vs booked ${r.stated}`, r.late, toHHMM(r.earliest), r.stated)}</div>`;
       else if(r.earliest!=null && !r.stated) sub = `<div class="legln">${t("earliest","earliest here")} ≈ ${toHHMM(r.earliest)}</div>`;
     } else {
-      clock = r.proj!=null
-        ? block(toHHMM(r.proj), r.dwell || null, r.dwell ? toHHMM(r.proj + r.dwell) : null, booked || null)
-        : `<span class="tm none">—</span>`;
+      clock = r.proj==null ? `<span class="tm none">—</span>`
+        : isStart
+          ? `<div class="tblk"><div class="tlab">DEPART</div><div class="tbig dep">${toHHMM(r.proj)}</div>${booked?`<div class="tbook">booked ${booked}</div>`:""}</div>`
+          : block(toHHMM(r.proj), r.dwell || null, r.dwell ? toHHMM(r.proj + r.dwell) : null, booked || null);
       if(r.projNote) sub += `<div class="legln" style="color:#f4d79a">${r.projNote}</div>`;
       // dwell now shows as the pill in the time block — no need to say it twice
       if(r.wait)     sub += `<div class="legln" style="color:#9fdcae">${r.wait} ${t("spare","min spare before the booking")}</div>`;
