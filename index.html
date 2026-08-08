@@ -501,10 +501,14 @@ DAYS.forEach(d=>{
   }).join("");
   const lateTotal = sched.filter(r => MODE==="booked" ? r.late : r.squeeze).length;
   const endProj = sched.filter(r=>r.proj!=null).slice(-1)[0];
+  // Header shows the two times that matter at a glance: what time the coach rolls, and what
+  // time it stops. "ends" alone left you working out the departure from the rows below.
+  const startProj = sched.find(r=>r.proj!=null);
+  const lastArr = sched.filter(r=>r.key && r.proj!=null).slice(-1)[0];
   el.innerHTML = `
    <div class="dayhead"><span class="dot" style="background:${d.color}"></span>
      <span class="t">${tDate(d.id,d.date)} — ${tTitle(d.id,d.title)}</span>
-     <span class="m">${d.stops.length} ${t("stops","stops")}<br>${Math.round(km)} km · ${Math.floor(mn/60)}h${String(mn%60).padStart(2,"0")}${lateTotal?`<br><span class="badlate">${lateTotal} ${lateTotal>1?t("clashes","timing clashes"):t("clash","timing clash")}</span>`:""}${MODE==="realistic"&&endProj?`<br><span class="fin">${t("ends","ends ≈")} ${toHHMM(endProj.proj)}</span>`:""}</span></div>
+     <span class="m">${d.stops.length} ${t("stops","stops")}<br>${Math.round(km)} km · ${Math.floor(mn/60)}h${String(mn%60).padStart(2,"0")}${lateTotal?`<br><span class="badlate">${lateTotal} ${lateTotal>1?t("clashes","timing clashes"):t("clash","timing clash")}</span>`:""}${MODE==="realistic"&&startProj?`<br><span class="fin">${t("depart","depart")} ${toHHMM(startProj.proj)}</span><br><span class="fin">${t("arrive","arrive")} ${toHHMM((lastArr||endProj).proj)}</span>`:""}</span></div>
    <div class="body">${rows}
      ${(d.flags||[]).map(f=>`<div class="flag"><b>${t("checkThis","Check this:")}</b> ${f}</div>`).join("")}
      ${(d.notes||[]).map(n=>`<div class="note">${n}</div>`).join("")}</div>`;

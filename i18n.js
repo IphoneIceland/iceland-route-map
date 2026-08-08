@@ -29,6 +29,8 @@ es: {
     checkThis: "Comprueba esto:",
     stops: "paradas",
     ends: "termina ≈",
+    depart: "salida",
+    arrive: "llegada",
     clash: "conflicto de horario",
     clashes: "conflictos de horario",
     fixedFind: (t, m) => `${t} es fijo — busca ${m} min antes de aquí.`,
