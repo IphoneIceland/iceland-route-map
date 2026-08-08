@@ -37,7 +37,7 @@
   .sc{flex:1;min-width:0}
   .sn{font-size:12.5px;font-weight:600;line-height:1.35}
   .sd{font-size:11.5px;color:var(--mute);line-height:1.5;margin-top:1px}
-  .tw{flex:none;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px;padding-top:2px}
+  .tw{flex:none;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px;padding-top:2px;min-width:80px}
   .tm.proj{color:#9fe0ff}
   .tmb{font:400 10px/1.3 -apple-system,sans-serif;color:#6f8090;white-space:nowrap}
   .fin{color:#9fe0ff;font-weight:600}
@@ -53,6 +53,17 @@
   .gm{display:inline-block;margin-top:0;font-size:10.5px;color:#5ec8f2;text-decoration:none;border-bottom:1px solid rgba(94,200,242,.35)}
   .gm:hover{color:#9fe0ff}
   .legln{font-size:10.5px;color:#6f8090;margin-top:3px;font-variant-numeric:tabular-nums}
+  .driveln{display:flex;align-items:center;gap:6px;margin:6px 0 2px;font:600 11px/1 -apple-system,sans-serif;
+    color:#8fb6cc;letter-spacing:.02em;font-variant-numeric:tabular-nums}
+  .driveln .bar{flex:1;height:1px;background:linear-gradient(90deg,#2b333d,transparent)}
+  .driveln .km{color:#5b6b7a;font-weight:400}
+  .tblk{display:flex;flex-direction:column;align-items:flex-end;gap:1px;min-width:76px}
+  .tlab{font:700 8.5px/1 -apple-system,sans-serif;letter-spacing:.09em;color:#61707e}
+  .tbig{font:700 15px/1.15 -apple-system,sans-serif;color:#e8edf2;font-variant-numeric:tabular-nums}
+  .tbig.dep{color:#9fe0ff}
+  .tdwell{margin:3px 0;padding:1px 6px;border:1px solid #2b333d;border-radius:9px;
+    font:600 10px/1.5 -apple-system,sans-serif;color:#f2c98a;white-space:nowrap}
+  .tbook{font:400 9.5px/1.3 -apple-system,sans-serif;color:#6f8090;white-space:nowrap;margin-top:2px}
   .late{margin-top:4px;font-size:10.5px;color:#ffb3b3;background:#3a1a1a;border:1px solid #6b2b2b;border-radius:5px;padding:4px 6px;line-height:1.45}
   .badlate{color:#ff9c9c;font-weight:600}
   .flag{margin-top:10px;padding:9px 10px;border-radius:7px;background:#33240f;border:1px solid #6b4a17;color:#f4d79a;font-size:11.5px;line-height:1.5}
@@ -448,18 +459,30 @@ DAYS.forEach(d=>{
     const nm  = r.key ? D.points[r.key].name : (r.label || (r.kind==="ferry" ? "Ferry crossing" : "Stop"));
 
     const booked = r.stated ? `${r.stated}${r.statedEnd?"–"+r.statedEnd:""}` : "";
+    // ARRIVE / time there / DEPART, spelled out. Reading a coach schedule at 60 km/h
+    // off a phone is not the moment to work out what a bare number means.
+    const block = (arr, dwell, dep, bookedTxt) =>
+      `<div class="tblk">`
+      + (arr ? `<div class="tlab">ARRIVE</div><div class="tbig">${arr}</div>` : `<div class="tbig" style="color:#4d5a66">—</div>`)
+      + (dwell ? `<div class="tdwell">${dwell} min</div>` : "")
+      + (dep ? `<div class="tlab">DEPART</div><div class="tbig dep">${dep}</div>` : "")
+      + (bookedTxt ? `<div class="tbook">booked ${bookedTxt}</div>` : "")
+      + `</div>`;
     let clock, sub = "";
     if(MODE === "booked"){
-      clock = booked ? `<span class="tm">${booked}</span>` : `<span class="tm none">—</span>`;
+      clock = r.stated
+        ? block(r.stated, null, r.statedEnd || null, null)
+        : (r.earliest != null ? block(toHHMM(r.earliest), null, null, null)
+                              : `<span class="tm none">—</span>`);
       if(r.unknownGap) sub = `<div class="legln" style="color:#f4d79a">${t("crossingUnknown","crossing time unknown — clock estimates stop here")}</div>`;
       else if(r.late)  sub = `<div class="late">${tf("lateBy",`${r.late} min late — earliest arrival ${toHHMM(r.earliest)} vs booked ${r.stated}`, r.late, toHHMM(r.earliest), r.stated)}</div>`;
       else if(r.earliest!=null && !r.stated) sub = `<div class="legln">${t("earliest","earliest here")} ≈ ${toHHMM(r.earliest)}</div>`;
     } else {
       clock = r.proj!=null
-        ? `<span class="tm proj">${toHHMM(r.proj)}</span>${booked?`<span class="tmb">booked ${booked}</span>`:""}`
+        ? block(toHHMM(r.proj), r.dwell || null, r.dwell ? toHHMM(r.proj + r.dwell) : null, booked || null)
         : `<span class="tm none">—</span>`;
       if(r.projNote) sub += `<div class="legln" style="color:#f4d79a">${r.projNote}</div>`;
-      if(r.dwell)    sub += `<div class="legln">${r.dwell} ${t("onGround","min on the ground")}</div>`;
+      // dwell now shows as the pill in the time block — no need to say it twice
       if(r.wait)     sub += `<div class="legln" style="color:#9fdcae">${r.wait} ${t("spare","min spare before the booking")}</div>`;
       if(r.squeeze)  sub += `<div class="late"><b>${tf("fixedFind",`${r.stated} is fixed — find ${r.squeeze} min before here.`, r.stated, r.squeeze)}</b> ${t("fixedCut","Cut it from the stops above, not from this one.")}</div>`;
     }
@@ -470,8 +493,8 @@ DAYS.forEach(d=>{
       badge = `<span class="prov" style="color:${L[1]};border-color:${L[1]}44" title="${tProv(pk,1,L[2])}">${tProv(pk,0,L[0])}</span>`;
     }
     const gm = r.key ? `<a class="gm" target="_blank" rel="noopener" href="${gmap(D.points[r.key].lat, D.points[r.key].lon)}">${t("openInMaps","Open in Google Maps ↗")}</a>` : "";
-    const leg = r.leg ? `<div class="legln">↓ ${r.leg.km} km · ${r.leg.min} ${t("drive","min drive")}</div>` : "";
-    return `${leg}<div class="stop"${r.key?` data-key="${r.key}" data-n="${r.n}" title="Show on the map"`:""}><div class="${cls}" style="${bg}">${r.n}</div>
+    const leg = r.leg ? `<div class="driveln">↓ ${r.leg.min} ${t("drive","min drive")}<span class="km">${r.leg.km} km</span><span class="bar"></span></div>` : "";
+    return `${leg}<div class="stop"${r.key?` data-key="${r.key}" data-n="${r.n}"`:""}><div class="${cls}" style="${bg}">${r.n}</div>
       <div class="sc"><div class="sn">${nm}</div><div class="sd">${r.desc}</div>${sub}<div class="provrow">${badge}${gm}</div></div>
       <div class="tw">${clock}</div></div>`;
   }).join("");
