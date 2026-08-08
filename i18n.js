@@ -52,7 +52,7 @@ es: {
     d1: "Llegada + Costa Sur → Umi Hotel (reordenado)",
     d2: "Islas Vestman (Vestmannaeyjar)",
     d3: "Umi → Fjallsárlón / Jökulsárlón → Hotel Jökulsárlón",
-    d4: "Hotel Jökulsárlón → Hveragerði → Hotel Geysir",
+    d4: "Hotel Jökulsárlón → Vík → Hotel Geysir",
     d5: "Círculo Dorado desde el Hotel Geysir",
     d6: "Hotel Geysir → Reikiavik vía Úlfljótsvatn y Nesjavellir",
     d7: "Reykjanes — Seltún, Fagradalsfjall, Grindavík, Sky Lagoon"
@@ -104,8 +104,8 @@ es: {
       "",
       "Estiramiento de piernas. Está en la ruta, así que no cuesta nada de conducción.",
       "Caminata por el cañón.",
-      "Aseos y descanso. La única parada de servicios que queda en el día.",
-      "Gróðurhúsið — el mercado gastronómico del Greenhouse Hotel.",
+      "Almuerzo y descanso.",
+      "Parada de aseos en el Olís. CHINCHETA SIN VERIFICAR — esto es Selfoss en la Ruta 1, no la estación.",
       "Noche del grupo.",
       "Paseo guiado — a 350 m de la puerta del hotel."
     ],
