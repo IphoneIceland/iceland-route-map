@@ -527,7 +527,7 @@ DAYS.forEach(d=>{
     if(drive) S.push(`<span class="dr">↓ ${drive.min} ${t("drive","min drive")} · ${drive.km} km</span>`);
     const strip = S.length ? `<div class="tstrip">${S.join('<span class="sep">·</span>')}</div>` : "";
     return `${leg}<div class="stop"${r.key?` data-key="${r.key}" data-n="${r.n}"`:""}><div class="${cls}" style="${bg}">${r.n}</div>
-      <div class="sc"><div class="sn">${nm}</div><div class="sd">${r.desc}</div>${strip}${sub}<div class="provrow">${badge}${gm}</div></div>
+      <div class="sc"><div class="sn">${nm}</div><div class="sd">${r.desc}</div>${strip}${sub}</div>
       </div>`;
   }).join("");
   const lateTotal = sched.filter(r => MODE==="booked" ? r.late : r.squeeze).length;
