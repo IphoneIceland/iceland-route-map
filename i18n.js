@@ -99,14 +99,12 @@ es: {
       "Llegada al Hotel Jökulsárlón después de la excursión en barco. Conductor y guía en el mismo hotel."
     ],
     d4: [
-      "Salida a las 09:00. Llegada al hotel 17:50 con tiempos de Google. — no pueden ser ciertas a la vez las 09:00 y una llegada a las 16:00 con estas paradas.",
+      "Salida a las 09:00. Llegada al hotel 17:10 con tiempos de Google. — no pueden ser ciertas a la vez las 09:00 y una llegada a las 16:00 con estas paradas.",
       "Estiramiento de piernas, 15 min. Está en la ruta, no cuesta nada de conducción.",
-      "Kirkjubæjarklaustur — 20 min. Combustible y aseos.",
       "Caminata por el cañón de Fjaðrárgljúfur. 60 min.",
-      "Vík — 20 min. Aseos y descanso, después de la caminata.",
-      "Hvolsvöllur, 20 min.",
+      "Vík — 20 min. Aseos y descanso, después de la caminata. La única parada de servicios que queda en el día.",
       "Gróðurhúsið — Greenhouse Hotel Food Hall, Hveragerði. 60 min. Ubicación confirmada desde tu enlace de Google Maps: The Greenhouse Hotel, 63.99648, -21.19064.",
-      "Llegada al Hotel Geysir 17:50, noche del grupo. Antes eran las 16:00 — se están cambiando los arreglos.",
+      "Llegada al Hotel Geysir 17:10, noche del grupo. Antes eran las 16:00 — se están cambiando los arreglos.",
       "Paseo guiado hasta Strokkur — a 350 m de la puerta del hotel, así que lo de «al otro lado de la calle» del correo se sostiene."
     ],
     d5: [
