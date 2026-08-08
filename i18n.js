@@ -111,13 +111,13 @@ es: {
       "Paseo guiado — a 350 m de la puerta del hotel."
     ],
     d5: [
-      "Recogida en el Hotel Geysir a las 10:15.",
-      "Parque Nacional de Þingvellir. Salida por la carretera 360, Grafningsvegur efri, por el lado oeste de Þingvallavatn.",
-      "Cráter de Kerið, 12:30–13:00.",
-      "Friðheimar, 13:30–15:00. Restaurante completo; conductor y guía usan la sala de guías.",
-      "Gullfoss, 15:30–16:15.",
-      "Geysir, 16:30.",
-      "Regreso al Hotel Geysir — a 500 m de Geysir. El grupo pernocta aquí y sale a las 09:00 del día 11."
+      "Recogida en el Hotel Geysir.",
+      "Þingvellir, P5. Salida por la carretera 360, Grafningsvegur efri, por el lado oeste de Þingvallavatn.",
+      "Cráter de Kerið.",
+      "Friðheimar — reservado a las 13:30. Restaurante completo; conductor y guía usan la sala de guías. Salida por Flúðir.",
+      "Gullfoss.",
+      "Geysir.",
+      "Regreso al Hotel Geysir — a 500 m de Geysir. Noche del grupo."
     ],
     d6: [
       "Salida del Hotel Geysir a las 09:00.",
